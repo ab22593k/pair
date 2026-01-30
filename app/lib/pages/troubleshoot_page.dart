@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/util/native/cmd_helper.dart';
@@ -116,7 +117,7 @@ class _TroubleshootItemState extends State<_TroubleshootItem> {
                         onPressed: () {
                           setState(() => _showCommands = !_showCommands);
                         },
-                        child: const Icon(Icons.info),
+                        child: HugeIcon(icon: HugeIcons.strokeRoundedInformationCircle, color: Theme.of(context).iconTheme.color),
                       ),
                     ],
                   ],

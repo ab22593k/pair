@@ -1,13 +1,13 @@
 use crate::model::discovery::DeviceType;
 use crate::util::base64;
 use anyhow::Result;
-use futures_util::stream::StreamExt;
 use futures_util::SinkExt;
+use futures_util::stream::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::cmp::PartialEq;
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{Mutex, mpsc};
 use tokio::time::Duration;
 #[cfg(feature = "webrtc-signaling")]
 use tokio_tungstenite::connect_async;
@@ -248,11 +248,9 @@ impl SignalingConnection {
                                 client,
                                 peers: _peers,
                             } = &message
-                            {
-                                if client_tx.send(client.clone()).await.is_err() {
+                                && client_tx.send(client.clone()).await.is_err() {
                                     return;
                                 }
-                            }
 
                             match receive_tx.send(message).await {
                                 Ok(_) => {}
@@ -291,11 +289,10 @@ impl SignalingConnection {
             tokio::spawn(async move {
                 while let Some(message) = self.rx.recv().await {
                     // send answer
-                    if let WsServerMessage::Answer(sdp) = message.clone() {
-                        if let Some(callback) = on_answer.lock().await.remove(&sdp.session_id) {
+                    if let WsServerMessage::Answer(sdp) = message.clone()
+                        && let Some(callback) = on_answer.lock().await.remove(&sdp.session_id) {
                             callback(sdp);
                         }
-                    }
 
                     tx.send(message).await.unwrap();
                 }

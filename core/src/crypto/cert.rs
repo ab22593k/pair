@@ -12,7 +12,7 @@ pub fn verify_cert_from_pem(cert: String, public_key: Option<String>) -> anyhow:
 }
 
 pub fn verify_cert_from_der(cert: &[u8], public_key: Option<String>) -> anyhow::Result<()> {
-    let (_, parsed_cert) = X509Certificate::from_der(&cert)?;
+    let (_, parsed_cert) = X509Certificate::from_der(cert)?;
 
     verify_cert_from_cert(parsed_cert, public_key)
 }
@@ -54,7 +54,7 @@ pub fn public_key_from_cert_pem(cert: String) -> anyhow::Result<String> {
 /// Extracts the public key from the certificate which is in DER format.
 /// Encodes the public key in PEM format.
 pub fn public_key_from_cert_der(cert: &[u8]) -> anyhow::Result<String> {
-    let (_, parsed_cert) = X509Certificate::from_der(&cert)?;
+    let (_, parsed_cert) = X509Certificate::from_der(cert)?;
     public_key_from_cert(parsed_cert)
 }
 

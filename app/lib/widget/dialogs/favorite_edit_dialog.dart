@@ -1,6 +1,7 @@
 import 'package:common/isolate.dart';
 import 'package:common/model/device.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/favorite_device.dart';
@@ -107,7 +108,7 @@ class _FavoriteEditDialogState extends State<FavoriteEditDialog> with Refena {
                     }
                   }
                 },
-                icon: const Icon(Icons.delete),
+                icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: Theme.of(context).colorScheme.warning),
                 label: Text(t.general.delete),
               ),
             ],
@@ -128,7 +129,11 @@ class _FavoriteEditDialogState extends State<FavoriteEditDialog> with Refena {
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 5),
-                          child: Icon(Icons.info, color: Theme.of(context).colorScheme.warning, size: 20),
+                          child: HugeIcon(
+                            icon: HugeIcons.strokeRoundedInformationCircle,
+                            color: Theme.of(context).colorScheme.warning,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ],

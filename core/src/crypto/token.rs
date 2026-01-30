@@ -118,14 +118,14 @@ pub fn generate_token_timestamp(key: &SigningTokenKey) -> anyhow::Result<String>
 pub fn generate_token_nonce(key: &SigningTokenKey, salt: &[u8]) -> anyhow::Result<String> {
     let digest = {
         let public_key = key.inner.verifying_key().to_public_key_der()?;
-        let hash_input = [public_key.as_bytes(), &salt].concat();
+        let hash_input = [public_key.as_bytes(), salt].concat();
         hash::sha256(&hash_input)
     };
     let signature = key.inner.sign(&digest);
 
     let hash_method = "sha256";
     let hash_base64 = util::base64::encode(&digest);
-    let salt_base64 = util::base64::encode(&salt);
+    let salt_base64 = util::base64::encode(salt);
     let sign_method = "ed25519";
     let signature_base64 = util::base64::encode(signature.to_bytes());
 
@@ -180,7 +180,14 @@ pub fn verify_token_with_result(
     verify_salt: impl Fn(&[u8]) -> anyhow::Result<()>,
 ) -> anyhow::Result<()> {
     let parts: Vec<&str> = token.split('.').collect();
-    let [hash_method, hash_base64, salt_base64, sign_method, signature_base64] = parts[0..5] else {
+    let [
+        hash_method,
+        hash_base64,
+        salt_base64,
+        sign_method,
+        signature_base64,
+    ] = parts[0..5]
+    else {
         return Err(anyhow::anyhow!("Invalid structure"));
     };
 

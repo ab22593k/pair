@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/receive_history_entry.dart';
@@ -85,7 +86,7 @@ class ReceiveHistoryPage extends StatelessWidget {
                           final destination = context.read(settingsProvider).destination ?? await getDefaultDestinationDirectory();
                           await openFolder(folderPath: destination);
                         },
-                  icon: const Icon(Icons.folder),
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedFolder01, color: Theme.of(context).iconTheme.color),
                   label: Text(t.receiveHistoryPage.openFolder),
                 ),
                 const SizedBox(width: 20),
@@ -106,7 +107,7 @@ class ReceiveHistoryPage extends StatelessWidget {
                             await context.redux(receiveHistoryProvider).dispatchAsync(RemoveAllHistoryEntriesAction());
                           }
                         },
-                  icon: const Icon(Icons.delete),
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: Theme.of(context).iconTheme.color),
                   label: Text(t.receiveHistoryPage.deleteHistory),
                 ),
               ],

@@ -1,9 +1,11 @@
+#![allow(dead_code)]
+
 mod url;
 
 use crate::http;
+use crate::http::StatusCodeError;
 use crate::http::client::url::{ApiVersion, TargetUrl};
 use crate::http::dto::ProtocolType;
-use crate::http::StatusCodeError;
 use crate::{crypto, util};
 use futures_util::StreamExt;
 use lru::LruCache;
@@ -11,10 +13,19 @@ use reqwest::{Response, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::num::NonZeroUsize;
 use std::sync::Arc;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{Mutex, mpsc};
 use tokio_stream::wrappers::ReceiverStream;
 
 const BASE_PATH: &str = "/api/localsend/v3";
+
+/// Target information for an upload request.
+pub struct UploadTarget {
+    pub protocol: ProtocolType,
+    pub ip: String,
+    pub port: u16,
+    pub session_id: String,
+    pub token: String,
+}
 
 pub struct LsHttpClient {
     client: reqwest::Client,
@@ -190,25 +201,21 @@ impl LsHttpClient {
     /// Uploads a file to the server.
     pub async fn upload(
         &self,
-        protocol: &ProtocolType,
-        ip: &str,
-        port: u16,
-        session_id: String,
+        target: &UploadTarget,
         file_id: String,
-        token: String,
         binary: mpsc::Receiver<Vec<u8>>,
     ) -> anyhow::Result<()> {
         let res = self
             .client
             .post(format!(
                 "{}://{}:{}{}/upload?sessionId={}&fileId={}&token={}",
-                protocol.as_str(),
-                ip,
-                port,
+                target.protocol.as_str(),
+                target.ip,
+                target.port,
                 BASE_PATH,
-                session_id,
+                target.session_id,
                 file_id,
-                token
+                target.token
             ))
             .body({
                 let stream = ReceiverStream::new(binary).map(Ok::<Vec<u8>, anyhow::Error>);

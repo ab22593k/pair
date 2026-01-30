@@ -66,7 +66,7 @@ pub async fn ws_handler(
         let raw_forwarded = headers
             .get("x-forwarded-for")
             .and_then(|v| v.to_str().ok())
-            .and_then(|v| v.split(',').last()) // Get the last component
+            .and_then(|v| v.split(',').next_back()) // Get the last component
             .map(|v| v.trim().to_string())
             .and_then(|v| IpAddr::from_str(&v).ok());
 
@@ -180,8 +180,8 @@ async fn handle_socket(
     let ip_group_clone = ip_group.clone();
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
-            if let Message::Text(text) = msg {
-                if let Ok(msg) = serde_json::from_str::<WsClientMessage>(&text) {
+            if let Message::Text(text) = msg
+                && let Ok(msg) = serde_json::from_str::<WsClientMessage>(&text) {
                     if protect_ddos_request_count(&request_count_map, &ip_group_clone)
                         .await
                         .is_err()
@@ -224,7 +224,6 @@ async fn handle_socket(
                         }
                     }
                 }
-            }
         }
     });
 
@@ -283,8 +282,8 @@ async fn send_update_to_other_peers_with_lock(
     let response_info = ClientInfo::from(info.clone(), peer_id);
     {
         let mut tx_map = tx_map.lock().await;
-        if let Some(tx_local_map) = tx_map.get_mut(ip_group) {
-            if let Some(peer_state) = tx_local_map.get_mut(&peer_id) {
+        if let Some(tx_local_map) = tx_map.get_mut(ip_group)
+            && let Some(peer_state) = tx_local_map.get_mut(&peer_id) {
                 peer_state.client = info;
 
                 peers_tx = tx_local_map
@@ -293,7 +292,6 @@ async fn send_update_to_other_peers_with_lock(
                     .map(|(_, v)| v.tx.clone())
                     .collect();
             }
-        }
     }
 
     for peer_tx in peers_tx {
@@ -324,11 +322,10 @@ async fn send_to_peer_with_lock(
     let mut target_peer_tx: Option<mpsc::Sender<WsServerMessage>> = None;
     {
         let tx_map = tx_map.lock().await;
-        if let Some(tx_local_map) = tx_map.get(ip_group) {
-            if let Some(peer_state) = tx_local_map.get(&target) {
+        if let Some(tx_local_map) = tx_map.get(ip_group)
+            && let Some(peer_state) = tx_local_map.get(&target) {
                 target_peer_tx = Some(peer_state.tx.clone());
             }
-        }
     }
 
     if let Some(tx) = target_peer_tx {

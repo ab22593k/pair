@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/send_mode.dart';
@@ -25,12 +26,12 @@ import 'package:localsend_app/widget/custom_icon_button.dart';
 import 'package:localsend_app/widget/dialogs/add_file_dialog.dart';
 import 'package:localsend_app/widget/dialogs/send_mode_help_dialog.dart';
 import 'package:localsend_app/widget/file_thumbnail.dart';
-import 'package:localsend_app/widget/responsive_wrap_view.dart';
 import 'package:localsend_app/widget/list_tile/device_list_tile.dart';
 import 'package:localsend_app/widget/list_tile/device_placeholder_list_tile.dart';
 import 'package:localsend_app/widget/opacity_slideshow.dart';
 import 'package:localsend_app/widget/responsive_builder.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
+import 'package:localsend_app/widget/responsive_wrap_view.dart';
 import 'package:localsend_app/widget/rotating_widget.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:routerino/routerino.dart';
@@ -71,7 +72,7 @@ class SendTab extends StatelessWidget {
                     minChildWidth: buttonWidth,
                     children: _options.map((option) {
                       return BigButton(
-                        icon: option.icon,
+                        icon: option.icon(context),
                         label: option.label,
                         filled: false,
                         onTap: () async => ref.global.dispatchAsync(
@@ -100,7 +101,7 @@ class SendTab extends StatelessWidget {
                               const Spacer(),
                               CustomIconButton(
                                 onPressed: () => ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction()),
-                                child: Icon(Icons.close, color: Theme.of(context).colorScheme.secondary),
+                                child: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).colorScheme.secondary),
                               ),
                               const SizedBox(width: 5),
                             ],
@@ -158,7 +159,7 @@ class SendTab extends StatelessWidget {
                                     options: _options,
                                   );
                                 },
-                                icon: const Icon(Icons.add),
+                                icon: HugeIcon(icon: HugeIcons.strokeRoundedAdd01, color: Theme.of(context).iconTheme.color),
                                 label: Text(t.general.add),
                               ),
                               const SizedBox(width: 15),
@@ -186,14 +187,14 @@ class SendTab extends StatelessWidget {
                       message: t.sendTab.manualSending,
                       child: CustomIconButton(
                         onPressed: () async => vm.onTapAddress(context),
-                        child: const Icon(Icons.ads_click),
+                        child: HugeIcon(icon: HugeIcons.strokeRoundedCursorPointer01, color: Theme.of(context).iconTheme.color),
                       ),
                     ),
                     Tooltip(
                       message: t.dialogs.favoriteDialog.title,
                       child: CustomIconButton(
                         onPressed: () async => await vm.onTapFavorite(context),
-                        child: const Icon(Icons.favorite),
+                        child: HugeIcon(icon: HugeIcons.strokeRoundedFavourite, color: Theme.of(context).iconTheme.color),
                       ),
                     ),
                     _SendModeButton(
@@ -351,7 +352,7 @@ class _ScanButton extends StatelessWidget {
               context.redux(nearbyDevicesProvider).dispatch(ClearFoundDevicesAction());
               await context.global.dispatchAsync(StartSmartScan(forceLegacy: true));
             },
-            child: Icon(Icons.sync, color: iconColor),
+            child: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: iconColor),
           ),
         ),
       );
@@ -387,7 +388,7 @@ class _ScanButton extends StatelessWidget {
         reverse: true,
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Icon(Icons.sync, color: iconColor),
+          child: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: iconColor),
         ),
       ),
     );
@@ -407,7 +408,7 @@ class _RotatingSyncIcon extends StatelessWidget {
       duration: const Duration(seconds: 2),
       spinning: scanningIps.contains(ip),
       reverse: true,
-      child: const Icon(Icons.sync),
+      child: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: Theme.of(context).iconTheme.color),
     );
   }
 }
@@ -451,7 +452,7 @@ class _SendModeButton extends StatelessWidget {
                     maintainSize: true,
                     maintainAnimation: true,
                     maintainState: true,
-                    child: const Icon(Icons.check_circle),
+                    child: HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
                   );
                 },
               ),
@@ -473,7 +474,7 @@ class _SendModeButton extends StatelessWidget {
                     maintainSize: true,
                     maintainAnimation: true,
                     maintainState: true,
-                    child: const Icon(Icons.check_circle),
+                    child: HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
                   );
                 },
               ),
@@ -487,12 +488,12 @@ class _SendModeButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Visibility(
+              Visibility(
                 visible: false,
                 maintainSize: true,
                 maintainAnimation: true,
                 maintainState: true,
-                child: Icon(Icons.check_circle),
+                child: HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
               ),
               const SizedBox(width: 10),
               Text(t.sendTab.sendModes.link),
@@ -505,9 +506,9 @@ class _SendModeButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Directionality(
+              Directionality(
                 textDirection: TextDirection.ltr,
-                child: Icon(Icons.help),
+                child: HugeIcon(icon: HugeIcons.strokeRoundedHelpCircle, color: Theme.of(context).iconTheme.color),
               ),
               const SizedBox(width: 10),
               Text(t.sendTab.sendModeHelp),
@@ -515,9 +516,9 @@ class _SendModeButton extends StatelessWidget {
           ),
         ),
       ],
-      child: const Padding(
-        padding: EdgeInsets.all(8),
-        child: Icon(Icons.settings),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, color: Theme.of(context).iconTheme.color),
       ),
     );
   }

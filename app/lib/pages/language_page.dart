@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/widget/custom_basic_appbar.dart';
@@ -52,7 +53,7 @@ class _LanguagePageState extends State<LanguagePage> {
                   ),
                   if (locale == activeLocale) ...[
                     const SizedBox(width: 10),
-                    const Icon(Icons.check_circle, color: Colors.green),
+                    HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Colors.green),
                   ],
                 ],
               ),

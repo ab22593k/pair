@@ -1,5 +1,6 @@
 use crate::http::dto::ProtocolType;
 use std::borrow::Cow;
+use std::fmt;
 
 pub struct TargetUrl {
     pub version: ApiVersion,
@@ -10,13 +11,13 @@ pub struct TargetUrl {
 }
 
 pub enum ApiVersion {
-    V2,
     V3,
 }
 
-impl TargetUrl {
-    pub fn to_string(&self) -> String {
-        format!(
+impl fmt::Display for TargetUrl {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}://{}:{}/api/localsend/{}{}",
             self.protocol.as_str(),
             match self.host.contains(':') {
@@ -25,7 +26,6 @@ impl TargetUrl {
             },
             self.port,
             match self.version {
-                ApiVersion::V2 => "v2",
                 ApiVersion::V3 => "v3",
             },
             self.path

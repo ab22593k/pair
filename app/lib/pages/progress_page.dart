@@ -7,6 +7,7 @@ import 'package:common/model/file_status.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/state/server/receive_session_state.dart';
@@ -401,7 +402,11 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 5),
-                                          child: Icon(Icons.info, color: Theme.of(context).colorScheme.warning, size: 20),
+                                          child: HugeIcon(
+                                            icon: HugeIcons.strokeRoundedInformationCircle,
+                                            color: Theme.of(context).colorScheme.warning,
+                                            size: 20,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -412,7 +417,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                         ),
                         if (sendSession != null && fileStatus == FileStatus.failed)
                           IconButton(
-                            icon: const Icon(Icons.refresh),
+                            icon: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: Theme.of(context).iconTheme.color),
                             onPressed: () async {
                               await ref
                                   .notifier(sendProvider)
@@ -501,13 +506,15 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                                 onPressed: () {
                                   setState(() => _advanced = !_advanced);
                                 },
-                                icon: const Icon(Icons.info),
+                                icon: HugeIcon(icon: HugeIcons.strokeRoundedInformationCircle, color: Theme.of(context).iconTheme.color),
                                 label: Text(_advanced ? t.general.hide : t.general.advanced),
                               ),
                               TextButton.icon(
                                 style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface),
                                 onPressed: () => _exit(closeSession: true),
-                                icon: Icon(status == SessionStatus.sending ? Icons.close : Icons.check_circle),
+                                icon: status == SessionStatus.sending
+                                    ? HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color)
+                                    : HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
                                 label: Text(
                                   status == SessionStatus.sending
                                       ? t.general.cancel

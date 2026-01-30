@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/tv_provider.dart';
@@ -76,7 +77,7 @@ class _TextFieldTvState extends State<TextFieldTv> with Refena {
         decoration: InputDecoration(
           suffixIcon: widget.onDelete != null
               ? IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color),
                   onPressed: () {
                     widget.onDelete?.call();
                   },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/widget/dialogs/custom_bottom_sheet.dart';
 import 'package:routerino/routerino.dart';
@@ -21,7 +22,7 @@ class IosLocalNetworkDialog extends StatelessWidget {
           ),
           ElevatedButton.icon(
             onPressed: () async => SystemSettings.app(),
-            icon: const Icon(Icons.settings),
+            icon: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, color: Theme.of(context).iconTheme.color),
             label: Text(t.dialogs.localNetworkUnauthorized.gotoSettings),
           ),
         ],

@@ -6,7 +6,7 @@ class BigButton extends StatelessWidget {
   static const double desktopWidth = 100.0;
   static const double mobileWidth = 90.0;
 
-  final IconData icon;
+  final Widget icon;
   final String label;
   final bool filled;
   final VoidCallback onTap;
@@ -40,7 +40,7 @@ class BigButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(icon),
+            icon,
             FittedBox(
               alignment: Alignment.bottomCenter,
               child: Text(label, maxLines: 1),

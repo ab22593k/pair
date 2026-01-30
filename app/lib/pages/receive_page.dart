@@ -5,6 +5,7 @@ import 'package:common/model/dto/file_dto.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
@@ -118,7 +119,7 @@ class _ReceivePageState extends State<ReceivePage> with Refena {
                                   if (vm.showSenderInfo && !smallUi)
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 10),
-                                      child: Icon(vm.sender.deviceType.icon, size: 64),
+                                      child: vm.sender.deviceType.icon(context),
                                     ),
                                   Builder(
                                     builder: (context) {
@@ -271,7 +272,7 @@ class _Actions extends StatelessWidget {
             vm.onAccept();
             context.pop();
           },
-          icon: const Icon(Icons.close),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color),
           label: Text(t.general.close),
         ),
       );
@@ -294,7 +295,7 @@ class _Actions extends StatelessWidget {
                 vm.onClose();
                 context.pop();
               },
-              icon: const Icon(Icons.check_circle),
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
               label: Text(t.general.close),
             ),
           ),
@@ -313,7 +314,7 @@ class _Actions extends StatelessWidget {
             onPressed: () async {
               await context.push(() => ReceiveOptionsPage(vm));
             },
-            icon: const Icon(Icons.settings),
+            icon: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, color: Theme.of(context).iconTheme.color),
             label: Text(t.receiveOptionsPage.title),
           ),
         ),
@@ -330,7 +331,7 @@ class _Actions extends StatelessWidget {
                 vm.onDecline();
                 context.pop();
               },
-              icon: const Icon(Icons.close),
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color),
               label: Text(t.general.decline),
             ),
             const SizedBox(width: 20),
@@ -340,7 +341,7 @@ class _Actions extends StatelessWidget {
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
               onPressed: selectedFiles.isEmpty ? null : () => vm.onAccept(),
-              icon: const Icon(Icons.check_circle),
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
               label: Text(t.general.accept),
             ),
           ],

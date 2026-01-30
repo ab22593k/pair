@@ -4,8 +4,8 @@ import 'dart:ui';
 import 'package:common/model/file_type.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/model/cross_file.dart';
-import 'package:localsend_app/util/file_type_ext.dart';
 import 'package:uri_content/uri_content.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
@@ -54,6 +54,21 @@ class SmartFileThumbnail extends StatelessWidget {
   }
 }
 
+Widget _fileTypeIcon(FileType fileType, BuildContext context) {
+  return HugeIcon(
+    icon: switch (fileType) {
+      FileType.image => HugeIcons.strokeRoundedImage01,
+      FileType.video => HugeIcons.strokeRoundedVideo01,
+      FileType.pdf => HugeIcons.strokeRoundedFile01,
+      FileType.text => HugeIcons.strokeRoundedTextAlignLeft01,
+      FileType.apk => HugeIcons.strokeRoundedAndroid,
+      FileType.other => HugeIcons.strokeRoundedFile01,
+    },
+    color: Theme.of(context).iconTheme.color,
+    size: 32,
+  );
+}
+
 class AssetThumbnail extends StatelessWidget {
   final AssetEntity asset;
   final FileType fileType;
@@ -72,7 +87,7 @@ class AssetThumbnail extends StatelessWidget {
         thumbnailSize: const ThumbnailSize.square(64),
         thumbnailFormat: ThumbnailFormat.jpeg,
       ),
-      icon: fileType.icon,
+      icon: _fileTypeIcon(fileType, context),
     );
   }
 }
@@ -99,16 +114,16 @@ class FilePathThumbnail extends StatelessWidget {
           ),
           errorBuilder: (_, __, ___) => Padding(
             padding: const EdgeInsets.all(10),
-            child: Icon(fileType.icon, size: 32),
+            child: _fileTypeIcon(fileType, context),
           ),
         );
       } else {
         thumbnail = Image.file(
           File(path!),
-          cacheWidth: 64, // reduce memory with low cached size; do not set cacheHeight because the image must keep its ratio
+          cacheWidth: 64,
           errorBuilder: (_, __, ___) => Padding(
             padding: const EdgeInsets.all(10),
-            child: Icon(fileType.icon, size: 32),
+            child: _fileTypeIcon(fileType, context),
           ),
         );
       }
@@ -118,7 +133,7 @@ class FilePathThumbnail extends StatelessWidget {
 
     return _Thumbnail(
       thumbnail: thumbnail,
-      icon: fileType.icon,
+      icon: _fileTypeIcon(fileType, context),
     );
   }
 }
@@ -144,7 +159,7 @@ class MemoryThumbnail extends StatelessWidget {
           bytes!,
           errorBuilder: (_, __, ___) => Padding(
             padding: const EdgeInsets.all(10),
-            child: Icon(fileType.icon, size: 32),
+            child: _fileTypeIcon(fileType, context),
           ),
         ),
       );
@@ -154,7 +169,7 @@ class MemoryThumbnail extends StatelessWidget {
 
     return _Thumbnail(
       thumbnail: thumbnail,
-      icon: fileType.icon,
+      icon: _fileTypeIcon(fileType, context),
       size: size,
     );
   }
@@ -162,7 +177,7 @@ class MemoryThumbnail extends StatelessWidget {
 
 class _Thumbnail extends StatelessWidget {
   final Widget? thumbnail;
-  final IconData? icon;
+  final Widget icon;
   final double size;
 
   const _Thumbnail({
@@ -181,7 +196,7 @@ class _Thumbnail extends StatelessWidget {
         child: ColoredBox(
           color: Theme.of(context).inputDecorationTheme.fillColor!,
           child: thumbnail == null
-              ? Icon(icon!, size: 32)
+              ? Center(child: icon)
               : FittedBox(
                   fit: BoxFit.cover,
                   clipBehavior: Clip.hardEdge,
@@ -206,7 +221,6 @@ class _ContentUriImage extends ImageProvider<Uri> {
   @override
   ImageStreamCompleter loadImage(Uri key, ImageDecoderCallback decode) {
     return MultiFrameImageStreamCompleter(
-      // ignore: discarded_futures
       codec: _loadAsync(key, decode),
       scale: 1,
       informationCollector: () sync* {

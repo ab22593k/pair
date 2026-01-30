@@ -6,6 +6,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/cross_file.dart';
@@ -35,16 +36,26 @@ final _logger = Logger('FilePickerHelper');
 final _uriContent = UriContent();
 
 enum FilePickerOption {
-  file(Icons.description),
-  folder(Icons.folder),
-  media(Icons.image),
-  text(Icons.subject),
-  app(Icons.apps),
-  clipboard(Icons.paste);
+  file,
+  folder,
+  media,
+  text,
+  app,
+  clipboard;
 
-  const FilePickerOption(this.icon);
-
-  final IconData icon;
+  Widget icon(BuildContext context) {
+    return HugeIcon(
+      icon: switch (this) {
+        FilePickerOption.file => HugeIcons.strokeRoundedFile01,
+        FilePickerOption.folder => HugeIcons.strokeRoundedFolder01,
+        FilePickerOption.media => HugeIcons.strokeRoundedImage01,
+        FilePickerOption.text => HugeIcons.strokeRoundedTextAlignLeft01,
+        FilePickerOption.app => HugeIcons.strokeRoundedGrid,
+        FilePickerOption.clipboard => HugeIcons.strokeRoundedFilePaste,
+      },
+      color: Theme.of(context).iconTheme.color,
+    );
+  }
 
   String get label {
     switch (this) {
@@ -183,12 +194,14 @@ Future<void> _pickFiles(BuildContext context, Ref ref) async {
       return;
     }
 
-    // ignore: use_build_context_synchronously
-    await showDialog(context: context, builder: (_) => const NoPermissionDialog());
+    if (context.mounted) {
+      await showDialog(context: context, builder: (_) => const NoPermissionDialog());
+    }
     _logger.warning('Failed to pick files', e);
   } finally {
-    // ignore: use_build_context_synchronously
-    Routerino.context.popUntilRoot(); // remove loading dialog
+    if (context.mounted) {
+      Routerino.context.popUntilRoot(); // remove loading dialog
+    }
   }
 }
 
@@ -233,11 +246,13 @@ Future<void> _pickFolder(BuildContext context, Ref ref) async {
     }
 
     _logger.warning('Failed to pick directory', e);
-    // ignore: use_build_context_synchronously
-    await showDialog(context: context, builder: (_) => const NoPermissionDialog());
+    if (context.mounted) {
+      await showDialog(context: context, builder: (_) => const NoPermissionDialog());
+    }
   } finally {
-    // ignore: use_build_context_synchronously
-    Routerino.context.popUntilRoot(); // remove loading dialog
+    if (context.mounted) {
+      Routerino.context.popUntilRoot(); // remove loading dialog
+    }
   }
 }
 
@@ -251,6 +266,10 @@ Future<void> _pickMedia(BuildContext context, Ref ref) async {
         ),
       ),
     );
+  }
+
+  if (!context.mounted) {
+    return;
   }
 
   final oldBrightness = Theme.of(context).brightness;

@@ -5,6 +5,7 @@ import 'package:common/constants.dart';
 import 'package:common/model/device.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
@@ -300,7 +301,7 @@ class SettingsTab extends StatelessWidget {
                                   child: TextButton(
                                     style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface),
                                     onPressed: () => vm.onTapStartServer(context),
-                                    child: const Icon(Icons.play_arrow),
+                                    child: HugeIcon(icon: HugeIcons.strokeRoundedPlay, color: Theme.of(context).iconTheme.color),
                                   ),
                                 )
                               else
@@ -309,7 +310,7 @@ class SettingsTab extends StatelessWidget {
                                   child: TextButton(
                                     style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface),
                                     onPressed: () => vm.onTapRestartServer(context),
-                                    child: const Icon(Icons.refresh),
+                                    child: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: Theme.of(context).iconTheme.color),
                                   ),
                                 ),
                               Tooltip(
@@ -317,7 +318,7 @@ class SettingsTab extends StatelessWidget {
                                 child: TextButton(
                                   style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface),
                                   onPressed: vm.serverState == null ? null : vm.onTapStopServer,
-                                  child: const Icon(Icons.stop),
+                                  child: HugeIcon(icon: HugeIcons.strokeRoundedStop, color: Theme.of(context).iconTheme.color),
                                 ),
                               ),
                             ],
@@ -346,7 +347,7 @@ class SettingsTab extends StatelessWidget {
                                   // Persist the new alias using the settingsProvider
                                   await ref.notifier(settingsProvider).setAlias(newAlias);
                                 },
-                                icon: const Icon(Icons.casino),
+                                icon: HugeIcon(icon: HugeIcons.strokeRoundedDice, color: Theme.of(context).iconTheme.color),
                               ),
                             ),
                             Tooltip(
@@ -364,7 +365,7 @@ class SettingsTab extends StatelessWidget {
                                   vm.aliasController.text = newAlias;
                                   await ref.notifier(settingsProvider).setAlias(newAlias);
                                 },
-                                icon: const Icon(Icons.desktop_windows_rounded),
+                                icon: HugeIcon(icon: HugeIcons.strokeRoundedComputer, color: Theme.of(context).iconTheme.color),
                               ),
                             ),
                           ],
@@ -379,7 +380,9 @@ class SettingsTab extends StatelessWidget {
                               return DropdownMenuItem(
                                 value: type,
                                 alignment: Alignment.center,
-                                child: Icon(type.icon),
+                                child: Builder(
+                                  builder: (context) => type.icon(context),
+                                ),
                               );
                             }).toList(),
                             onChanged: (type) async {
@@ -568,7 +571,7 @@ class SettingsTab extends StatelessWidget {
                       onPressed: () async {
                         await context.push(() => const ChangelogPage());
                       },
-                      icon: const Icon(Icons.history),
+                      icon: HugeIcon(icon: HugeIcons.strokeRoundedClock01, color: Theme.of(context).iconTheme.color),
                       label: Text(t.changelogPage.title),
                     ),
                   ),

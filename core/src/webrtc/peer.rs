@@ -16,14 +16,14 @@ use std::time::Duration;
 use tokio::sync::{mpsc, oneshot};
 use uuid::Uuid;
 use webrtc::api::APIBuilder;
+use webrtc::data_channel::RTCDataChannel;
 use webrtc::data_channel::data_channel_init::RTCDataChannelInit;
 use webrtc::data_channel::data_channel_message::DataChannelMessage;
-use webrtc::data_channel::RTCDataChannel;
 use webrtc::ice_transport::ice_server::RTCIceServer;
+use webrtc::peer_connection::RTCPeerConnection;
 use webrtc::peer_connection::configuration::RTCConfiguration;
 use webrtc::peer_connection::peer_connection_state::RTCPeerConnectionState;
 use webrtc::peer_connection::sdp::session_description::RTCSessionDescription;
-use webrtc::peer_connection::RTCPeerConnection;
 
 /// Nonce message exchanged by both peers
 /// starting with the sending peer.
@@ -118,7 +118,6 @@ pub struct RTCFile {
 #[derive(Debug)]
 struct RTCFileState {
     file_id: String,
-    size: u64,
     binary_tx: mpsc::Sender<Bytes>,
 }
 
@@ -177,21 +176,55 @@ pub struct PinConfig {
 
 const CHANNEL_LABEL: &str = "data";
 
+/// Configuration for RTC signaling.
+pub struct RTCSignalingConfig<'a> {
+    pub signaling: &'a ManagedSignalingConnection,
+    pub stun_servers: Vec<String>,
+    pub target_id: Uuid,
+}
+
+/// Authentication configuration for RTC connections.
+pub struct RTCAuthConfig {
+    pub signing_key: SigningTokenKey,
+    pub expecting_public_key: Option<Box<dyn VerifyingTokenKey + Send>>,
+    pub pin: Option<PinConfig>,
+}
+
+/// Channel configuration for sending offers.
+pub struct RTCSendChannels {
+    pub status_tx: mpsc::Sender<RTCStatus>,
+    pub selected_files_tx: oneshot::Sender<HashSet<String>>,
+    pub error_tx: mpsc::Sender<RTCFileError>,
+    pub pin_tx: mpsc::Sender<oneshot::Sender<String>>,
+    pub pair_tx: oneshot::Sender<oneshot::Sender<bool>>,
+    pub sending_rx: mpsc::Receiver<RTCFile>,
+}
+
 pub async fn send_offer(
-    signaling: &ManagedSignalingConnection,
-    stun_servers: Vec<String>,
-    target_id: Uuid,
-    signing_key: SigningTokenKey,
-    expecting_public_key: Option<Box<dyn VerifyingTokenKey + Send>>,
-    pin: Option<PinConfig>,
+    signaling_config: RTCSignalingConfig<'_>,
+    auth_config: RTCAuthConfig,
     files: Vec<FileDto>,
-    status_tx: mpsc::Sender<RTCStatus>,
-    selected_files_tx: oneshot::Sender<HashSet<String>>,
-    error_tx: mpsc::Sender<RTCFileError>,
-    pin_tx: mpsc::Sender<oneshot::Sender<String>>,
-    pair_tx: oneshot::Sender<oneshot::Sender<bool>>,
-    mut sending_rx: mpsc::Receiver<RTCFile>,
+    channels: RTCSendChannels,
 ) -> Result<()> {
+    let RTCSignalingConfig {
+        signaling,
+        stun_servers,
+        target_id,
+    } = signaling_config;
+    let RTCAuthConfig {
+        signing_key,
+        expecting_public_key,
+        pin,
+    } = auth_config;
+    let RTCSendChannels {
+        status_tx,
+        selected_files_tx,
+        error_tx,
+        pin_tx,
+        pair_tx,
+        mut sending_rx,
+    } = channels;
+
     let (peer_connection, mut done_rx) = create_peer_connection(stun_servers).await?;
 
     let data_channel = peer_connection
@@ -274,15 +307,11 @@ pub async fn send_offer(
 
             let remote_token = match &token_response {
                 RTCTokenResponse::Ok { token } | RTCTokenResponse::PinRequired { token } => {
-                    if let Some(expecting_public_key) = expecting_public_key {
-                        if !crypto::token::verify_token_nonce(
-                            &*expecting_public_key,
-                            &token,
-                            &nonce,
-                        ) {
+                    if let Some(expecting_public_key) = expecting_public_key
+                        && !crypto::token::verify_token_nonce(&*expecting_public_key, token, &nonce)
+                        {
                             return Err(anyhow::anyhow!("Invalid token signature or nonce"));
                         }
-                    }
                     token.to_owned()
                 }
                 RTCTokenResponse::InvalidSignature => {
@@ -333,7 +362,7 @@ pub async fn send_offer(
                     &mut receive_rx,
                     true,
                     |data_channel, result| {
-                        let data_channel = Arc::clone(&data_channel);
+                        let data_channel = Arc::clone(data_channel);
                         async move {
                             send_string_in_chunks(
                                 &data_channel,
@@ -381,14 +410,14 @@ pub async fn send_offer(
                     let _ = status_tx.try_send(RTCStatus::Error(format!(
                         "Failed to send file list message: {e}"
                     )));
-                    return Err(e.into());
+                    return Err(e);
                 }
 
                 if let Err(e) = send_delimiter(&data_channel).await {
                     let _ = status_tx.try_send(RTCStatus::Error(format!(
                         "Failed to send file list message: {e}"
                     )));
-                    return Err(e.into());
+                    return Err(e);
                 }
             }
 
@@ -397,7 +426,7 @@ pub async fn send_offer(
             // Receive file tokens
             let file_list_res = {
                 let bytes = receive_string_from_chunks(&mut receive_rx).await;
-                let parsed: RTCFileListResponse = serde_json::from_slice(&*bytes).map_err(|e| {
+                let parsed: RTCFileListResponse = serde_json::from_slice(&bytes).map_err(|e| {
                     anyhow::anyhow!("Failed to deserialize file list response: {e}")
                 })?;
                 parsed
@@ -439,7 +468,7 @@ pub async fn send_offer(
                     let file_list_res = {
                         let bytes = receive_string_from_chunks(&mut receive_rx).await;
                         let parsed: RTCFileListResponse =
-                            serde_json::from_slice(&*bytes).map_err(|e| {
+                            serde_json::from_slice(&bytes).map_err(|e| {
                                 anyhow::anyhow!("Failed to deserialize file list response: {e}")
                             })?;
                         parsed
@@ -470,7 +499,9 @@ pub async fn send_offer(
                 }
                 RTCFileListResponse::Declined => {
                     tracing::debug!("Declined by the receiving peer.");
-                    let _ = status_tx.send(RTCStatus::Declined).await;
+                    if status_tx.send(RTCStatus::Declined).await.is_err() {
+                        tracing::debug!("Failed to send declined status");
+                    }
                     return Ok(());
                 }
                 RTCFileListResponse::InvalidSignature => {
@@ -491,7 +522,13 @@ pub async fn send_offer(
                 .is_err()
             {
                 let error = "Could not publish selection";
-                let _ = status_tx.send(RTCStatus::Error(error.to_owned()));
+                if status_tx
+                    .send(RTCStatus::Error(error.to_owned()))
+                    .await
+                    .is_err()
+                {
+                    tracing::debug!("Failed to send error status");
+                }
                 return Err(anyhow::anyhow!(error));
             }
 
@@ -625,21 +662,43 @@ pub async fn send_offer(
     Ok(())
 }
 
+/// Channel configuration for accepting offers.
+pub struct RTCAcceptChannels {
+    pub status_tx: mpsc::Sender<RTCStatus>,
+    pub files_tx: oneshot::Sender<Vec<FileDto>>,
+    pub selected_files_rx: oneshot::Receiver<Option<HashSet<String>>>,
+    pub error_tx: mpsc::Sender<RTCFileError>,
+    pub pin_tx: mpsc::Sender<oneshot::Sender<String>>,
+    pub receiving_tx: mpsc::Sender<RTCFile>,
+    pub user_error_rx: mpsc::Receiver<RTCSendFileResponse>,
+}
+
 pub async fn accept_offer(
-    signaling: &ManagedSignalingConnection,
-    stun_servers: Vec<String>,
+    signaling_config: RTCSignalingConfig<'_>,
     offer: &WsServerSdpMessage,
-    signing_key: SigningTokenKey,
-    expecting_public_key: Option<Box<dyn VerifyingTokenKey + Send>>,
-    pin: Option<PinConfig>,
-    status_tx: mpsc::Sender<RTCStatus>,
-    files_tx: oneshot::Sender<Vec<FileDto>>,
-    selected_files_rx: oneshot::Receiver<Option<HashSet<String>>>,
-    error_tx: mpsc::Sender<RTCFileError>,
-    pin_tx: mpsc::Sender<oneshot::Sender<String>>,
-    receiving_tx: mpsc::Sender<RTCFile>,
-    mut user_error_tx: mpsc::Receiver<RTCSendFileResponse>,
+    auth_config: RTCAuthConfig,
+    channels: RTCAcceptChannels,
 ) -> Result<()> {
+    let RTCSignalingConfig {
+        signaling,
+        stun_servers,
+        target_id: _,
+    } = signaling_config;
+    let RTCAuthConfig {
+        signing_key,
+        expecting_public_key,
+        pin,
+    } = auth_config;
+    let RTCAcceptChannels {
+        status_tx,
+        files_tx,
+        selected_files_rx,
+        error_tx,
+        pin_tx,
+        receiving_tx,
+        mut user_error_rx,
+    } = channels;
+
     let (peer_connection, mut done_rx) = create_peer_connection(stun_servers).await?;
 
     let (data_channel_tx, mut data_channel_rx) = mpsc::channel::<Arc<RTCDataChannel>>(1);
@@ -741,7 +800,7 @@ pub async fn accept_offer(
                     &mut receive_rx,
                     false,
                     |data_channel, result| {
-                        let data_channel = Arc::clone(&data_channel);
+                        let data_channel = Arc::clone(data_channel);
                         async move {
                             data_channel
                                 .send_text(&serde_json::to_string(&match result {
@@ -774,7 +833,7 @@ pub async fn accept_offer(
             let pin_response = {
                 let bytes = receive_string_from_chunks(&mut receive_rx).await;
                 let parsed: RTCPinSendingResponse =
-                    serde_json::from_slice(&*bytes).map_err(|e| {
+                    serde_json::from_slice(&bytes).map_err(|e| {
                         anyhow::anyhow!("Failed to deserialize file list response: {e}")
                     })?;
                 parsed
@@ -784,7 +843,9 @@ pub async fn accept_offer(
                 RTCPinSendingResponse::Ok { files } => files,
                 RTCPinSendingResponse::PinRequired => {
                     tracing::debug!("PIN challenge by sender... (I need to send correct PIN)");
-                    let result = handle_pin::<Vec<FileDto>>(
+                    
+
+                    handle_pin::<Vec<FileDto>>(
                         &data_channel,
                         &status_tx,
                         &pin_tx,
@@ -811,9 +872,7 @@ pub async fn accept_offer(
                             }
                         },
                     )
-                    .await?;
-
-                    result
+                    .await?
                 }
                 RTCPinSendingResponse::TooManyAttempts => {
                     let _ = status_tx
@@ -888,7 +947,7 @@ pub async fn accept_offer(
                     file_state = None;
 
                     if let Some(last_file_id) = last_file_id {
-                        let error = match user_error_tx.recv().await {
+                        let error = match user_error_rx.recv().await {
                             Some(result) => {
                                 if result.success {
                                     None
@@ -946,25 +1005,23 @@ pub async fn accept_offer(
 
                     let (tx, rx) = mpsc::channel::<Bytes>(4);
 
-                    let size = {
-                        let entry = file_list.iter().find(|f| f.id == header.id);
-                        match entry {
-                            Some(file) => file.size,
-                            None => {
-                                let _ = error_tx
-                                    .send(RTCFileError {
-                                        file_id: header.id,
-                                        error: "Expected size to be available".to_string(),
-                                    })
-                                    .await;
-                                continue;
-                            }
+                    // Validate that the file exists in the file list
+                    if !file_list.iter().any(|f| f.id == header.id) {
+                        if error_tx
+                            .send(RTCFileError {
+                                file_id: header.id,
+                                error: "File not found in file list".to_string(),
+                            })
+                            .await
+                            .is_err()
+                        {
+                            tracing::debug!("Failed to send error");
                         }
-                    };
+                        continue;
+                    }
 
                     file_state = Some(RTCFileState {
                         file_id: header.id.clone(),
-                        size,
                         binary_tx: tx,
                     });
 
@@ -1195,9 +1252,9 @@ where
 
         if pin_try >= pin_config.max_tries {
             let _ = tokio::time::timeout(Duration::from_secs(5), async {
-                let _ = send_result(&data_channel, VerifyPinResult::TooManyAttempts).await;
+                let _ = send_result(data_channel, VerifyPinResult::TooManyAttempts).await;
 
-                wait_buffer_empty(&data_channel).await;
+                wait_buffer_empty(data_channel).await;
             })
             .await;
 
@@ -1208,7 +1265,7 @@ where
 
         if send_initial_notice || pin_try > 0 {
             send_initial_notice = false;
-            send_result(&data_channel, VerifyPinResult::PinRequired).await?;
+            send_result(data_channel, VerifyPinResult::PinRequired).await?;
         }
 
         remote_pin = match receive_rx.recv().await {
@@ -1378,9 +1435,9 @@ mod tests {
         assert_eq!(chunks[1].len(), CHUNK_SIZE);
         assert_eq!(chunks[2].len(), 5);
 
-        assert_eq!(chunks[0].iter().all(|x| *x == 0), true);
-        assert_eq!(chunks[1].iter().all(|x| *x == 1), true);
-        assert_eq!(chunks[2].iter().all(|x| *x == 2), true);
+        assert!(chunks[0].iter().all(|x| *x == 0));
+        assert!(chunks[1].iter().all(|x| *x == 1));
+        assert!(chunks[2].iter().all(|x| *x == 2));
     }
 
     #[test]

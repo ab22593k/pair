@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/device_info_provider.dart';
@@ -110,10 +111,10 @@ class _SendPageState extends State<SendPage> with Refena {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          const InitialFadeTransition(
-                            duration: Duration(milliseconds: 300),
-                            delay: Duration(milliseconds: 400),
-                            child: Icon(Icons.arrow_downward),
+                          InitialFadeTransition(
+                            duration: const Duration(milliseconds: 300),
+                            delay: const Duration(milliseconds: 400),
+                            child: HugeIcon(icon: HugeIcons.strokeRoundedArrowDown01, color: Theme.of(context).iconTheme.color),
                           ),
                           const SizedBox(height: 20),
                           Hero(
@@ -176,7 +177,7 @@ class _SendPageState extends State<SendPage> with Refena {
                                           context: context,
                                           builder: (_) => ErrorDialog(error: sendState.errorMessage!),
                                         ),
-                                        child: const Icon(Icons.info),
+                                        child: HugeIcon(icon: HugeIcons.strokeRoundedInformationCircle, color: Theme.of(context).iconTheme.color),
                                       ),
                                   ],
                                 ),
@@ -189,7 +190,9 @@ class _SendPageState extends State<SendPage> with Refena {
                                   _cancel();
                                   context.pop();
                                 },
-                                icon: Icon(waiting ? Icons.close : Icons.check_circle),
+                                icon: waiting
+                                    ? HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color)
+                                    : HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
                                 label: Text(waiting ? t.general.cancel : t.general.close),
                               ),
                             ),

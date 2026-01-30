@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/widget/dialogs/custom_bottom_sheet.dart';
 import 'package:routerino/routerino.dart';
@@ -20,7 +21,7 @@ class CancelSessionDialog extends StatelessWidget {
           ),
           ElevatedButton.icon(
             onPressed: () => context.pop(true),
-            icon: const Icon(Icons.close),
+            icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color),
             label: Text(t.general.cancel),
           ),
         ],

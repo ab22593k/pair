@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 
 class CustomBackButton extends StatelessWidget {
@@ -15,8 +16,8 @@ class CustomBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     return IconButton(
-      icon: Icon(
-        isRtl ? Icons.arrow_forward_ios_rounded : Icons.arrow_back_ios_new_rounded,
+      icon: HugeIcon(
+        icon: isRtl ? HugeIcons.strokeRoundedArrowRight01 : HugeIcons.strokeRoundedArrowLeft01,
         color: color ?? IconTheme.of(context).color,
       ),
       tooltip: MaterialLocalizations.of(context).backButtonTooltip,

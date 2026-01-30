@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+
 pub mod signaling;
+
 #[cfg(feature = "webrtc")]
-pub mod webrtc;
+pub mod peer;

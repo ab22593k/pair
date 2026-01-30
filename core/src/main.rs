@@ -9,8 +9,11 @@ use crate::http::client::LsHttpClient;
 use crate::http::dto::{PrepareUploadRequestDto, ProtocolType, RegisterDto};
 use crate::http::server::TlsConfig;
 use crate::model::discovery::DeviceType;
+use crate::webrtc::peer::{
+    PinConfig, RTCAcceptChannels, RTCAuthConfig, RTCFile, RTCFileError, RTCSendChannels,
+    RTCSendFileResponse, RTCSignalingConfig, RTCStatus,
+};
 use crate::webrtc::signaling::{ClientInfo, WsServerMessage};
-use crate::webrtc::webrtc::{PinConfig, RTCFile, RTCFileError, RTCSendFileResponse, RTCStatus};
 use anyhow::Result;
 use bytes::Bytes;
 use std::collections::{HashMap, HashSet};
@@ -95,6 +98,7 @@ DZmiOOqkzvgZOgOVQ2vFuJIXyZ/tY0ez35dtQYLhKRljlXjckA/PFuTJDa2kq1Rv
 qqsPsY3pRq93zkKNx1xRtURBiJEvA/Js2+hHWrU=
 -----END CERTIFICATE-----";
 
+#[tokio::test]
 async fn crypto_test() -> Result<()> {
     let key = token::generate_key();
 
@@ -262,10 +266,10 @@ async fn send_handler(
 ) {
     tracing::info!("Joined: {peer:?}");
     let (status_tx, mut status_rx) = mpsc::channel::<RTCStatus>(1);
-    let (selected_tx, mut selected_rx) = oneshot::channel::<HashSet<String>>();
+    let (selected_tx, selected_rx) = oneshot::channel::<HashSet<String>>();
     let (error_tx, mut error_rx) = mpsc::channel::<RTCFileError>(1);
     let (pin_tx, mut pin_rx) = mpsc::channel::<oneshot::Sender<String>>(1);
-    let (pair_tx, mut pair_rx) = oneshot::channel::<oneshot::Sender<bool>>();
+    let (pair_tx, pair_rx) = oneshot::channel::<oneshot::Sender<bool>>();
     let (send_tx, send_rx) = mpsc::channel::<RTCFile>(1);
 
     let files = vec![model::transfer::FileDto {
@@ -281,23 +285,29 @@ async fn send_handler(
     let send_task = tokio::spawn({
         let files = files.clone();
         async move {
-            webrtc::webrtc::send_offer(
-                &connection,
-                stun_servers,
-                peer.id,
-                token::generate_key(),
-                None,
-                Some(PinConfig {
-                    pin: "456".to_string(),
-                    max_tries: 3,
-                }),
+            webrtc::peer::send_offer(
+                RTCSignalingConfig {
+                    signaling: &connection,
+                    stun_servers,
+                    target_id: peer.id,
+                },
+                RTCAuthConfig {
+                    signing_key: token::generate_key(),
+                    expecting_public_key: None,
+                    pin: Some(PinConfig {
+                        pin: "456".to_string(),
+                        max_tries: 3,
+                    }),
+                },
                 files,
-                status_tx,
-                selected_tx,
-                error_tx,
-                pin_tx,
-                pair_tx,
-                send_rx,
+                RTCSendChannels {
+                    status_tx,
+                    selected_files_tx: selected_tx,
+                    error_tx,
+                    pin_tx,
+                    pair_tx,
+                    sending_rx: send_rx,
+                },
             )
             .await
             .expect("Failed to send offer");
@@ -349,7 +359,7 @@ async fn send_handler(
         tracing::info!("Selected: {selected:?}");
 
         let file = files.first().unwrap();
-        let (tx, mut rx) = mpsc::channel::<Bytes>(16);
+        let (tx, rx) = mpsc::channel::<Bytes>(16);
         send_tx
             .try_send(RTCFile {
                 file_id: file.id.clone(),
@@ -390,23 +400,30 @@ async fn receive_handler(
     let (user_error_tx, user_error_rx) = mpsc::channel::<RTCSendFileResponse>(1);
 
     let receive_task = tokio::spawn(async move {
-        webrtc::webrtc::accept_offer(
-            &connection,
-            stun_servers,
+        webrtc::peer::accept_offer(
+            RTCSignalingConfig {
+                signaling: &connection,
+                stun_servers,
+                target_id: offer.peer.id,
+            },
             &offer,
-            token::generate_key(),
-            None,
-            Some(PinConfig {
-                pin: "123".to_string(),
-                max_tries: 3,
-            }),
-            status_tx,
-            files_tx,
-            selected_rx,
-            error_tx,
-            pin_tx,
-            receiving_tx,
-            user_error_rx,
+            RTCAuthConfig {
+                signing_key: token::generate_key(),
+                expecting_public_key: None,
+                pin: Some(PinConfig {
+                    pin: "123".to_string(),
+                    max_tries: 3,
+                }),
+            },
+            RTCAcceptChannels {
+                status_tx,
+                files_tx,
+                selected_files_rx: selected_rx,
+                error_tx,
+                pin_tx,
+                receiving_tx,
+                user_error_rx,
+            },
         )
         .await
         .expect("Failed to accept offer");

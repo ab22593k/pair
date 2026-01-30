@@ -59,7 +59,7 @@ class AddFileDialog extends StatelessWidget {
       children: [
         ...options.map((option) {
           return BigButton(
-            icon: option.icon,
+            icon: option.icon(context),
             label: option.label,
             filled: true,
             onTap: () async {

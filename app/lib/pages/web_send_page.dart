@@ -1,6 +1,7 @@
 import 'package:common/util/sleep.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/cross_file.dart';
@@ -121,7 +122,7 @@ class _WebSendPageState extends State<WebSendPage> with Refena {
                       ),
                     ),
                   ] else if (_initializedError != null) ...[
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    HugeIcon(icon: HugeIcons.strokeRoundedAlert01, color: Colors.red, size: 48),
                     const SizedBox(height: 10),
                     Center(
                       child: Text(t.webSharePage.error, style: Theme.of(context).textTheme.titleLarge),
@@ -173,9 +174,9 @@ class _WebSendPageState extends State<WebSendPage> with Refena {
                                       context.showSnackBar(t.general.copiedToClipboard);
                                     }
                                   },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    child: Icon(Icons.content_copy, size: 16),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    child: HugeIcon(icon: HugeIcons.strokeRoundedCopy01, color: Theme.of(context).iconTheme.color, size: 16),
                                   ),
                                 ),
                                 InkWell(
@@ -190,9 +191,9 @@ class _WebSendPageState extends State<WebSendPage> with Refena {
                                       ),
                                     );
                                   },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    child: Icon(Icons.qr_code, size: 16),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    child: HugeIcon(icon: HugeIcons.strokeRoundedQrCode, color: Theme.of(context).iconTheme.color, size: 16),
                                   ),
                                 ),
                                 InkWell(
@@ -206,9 +207,9 @@ class _WebSendPageState extends State<WebSendPage> with Refena {
                                       ),
                                     );
                                   },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    child: Icon(Icons.tv, size: 16),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    child: HugeIcon(icon: HugeIcons.strokeRoundedTvSmart, color: Theme.of(context).iconTheme.color, size: 16),
                                   ),
                                 ),
                               ],
@@ -259,7 +260,7 @@ class _WebSendPageState extends State<WebSendPage> with Refena {
                                 style: TextButton.styleFrom(
                                   foregroundColor: Theme.of(context).colorScheme.onSurface,
                                 ),
-                                child: const Icon(Icons.close),
+                                child: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color),
                               ),
                               TextButton(
                                 onPressed: () {
@@ -268,7 +269,7 @@ class _WebSendPageState extends State<WebSendPage> with Refena {
                                 style: TextButton.styleFrom(
                                   foregroundColor: Theme.of(context).colorScheme.onSurface,
                                 ),
-                                child: const Icon(Icons.check_circle),
+                                child: HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
                               ),
                             ] else
                               Padding(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/init.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -17,13 +18,9 @@ import 'package:localsend_app/widget/responsive_builder.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 
 enum HomeTab {
-  receive(Icons.wifi),
-  send(Icons.send),
-  settings(Icons.settings);
-
-  const HomeTab(this.icon);
-
-  final IconData icon;
+  receive,
+  send,
+  settings;
 
   String get label {
     switch (this) {
@@ -135,7 +132,11 @@ class _HomePageState extends State<HomePage> with Refena {
                             : null,
                         destinations: HomeTab.values.map((tab) {
                           return NavigationRailDestination(
-                            icon: Icon(tab.icon),
+                            icon: switch (tab) {
+                              HomeTab.receive => HugeIcon(icon: HugeIcons.strokeRoundedWifi01, color: Theme.of(context).iconTheme.color),
+                              HomeTab.send => HugeIcon(icon: HugeIcons.strokeRoundedSent, color: Theme.of(context).iconTheme.color),
+                              HomeTab.settings => HugeIcon(icon: HugeIcons.strokeRoundedSettings01, color: Theme.of(context).iconTheme.color),
+                            },
                             label: Text(tab.label),
                           );
                         }).toList(),
@@ -171,7 +172,7 @@ class _HomePageState extends State<HomePage> with Refena {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.file_download, size: 128),
+                              HugeIcon(icon: HugeIcons.strokeRoundedDownload01, color: Theme.of(context).iconTheme.color, size: 128),
                               const SizedBox(height: 30),
                               Text(t.sendTab.placeItems, style: Theme.of(context).textTheme.titleLarge),
                             ],
@@ -187,7 +188,14 @@ class _HomePageState extends State<HomePage> with Refena {
                     selectedIndex: vm.currentTab.index,
                     onDestinationSelected: (index) => vm.changeTab(HomeTab.values[index]),
                     destinations: HomeTab.values.map((tab) {
-                      return NavigationDestination(icon: Icon(tab.icon), label: tab.label);
+                      return NavigationDestination(
+                        icon: switch (tab) {
+                          HomeTab.receive => HugeIcon(icon: HugeIcons.strokeRoundedWifi01, color: Theme.of(context).iconTheme.color),
+                          HomeTab.send => HugeIcon(icon: HugeIcons.strokeRoundedSent, color: Theme.of(context).iconTheme.color),
+                          HomeTab.settings => HugeIcon(icon: HugeIcons.strokeRoundedSettings01, color: Theme.of(context).iconTheme.color),
+                        },
+                        label: tab.label,
+                      );
                     }).toList(),
                   )
                 : null,

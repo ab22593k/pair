@@ -5,6 +5,7 @@ import 'package:common/isolate.dart';
 import 'package:common/model/device.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/last_devices.provider.dart';
@@ -223,7 +224,11 @@ class _AddressInputDialogState extends State<AddressInputDialog> with Refena {
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: Icon(Icons.info, color: Theme.of(context).colorScheme.warning, size: 20),
+                        child: HugeIcon(
+                          icon: HugeIcons.strokeRoundedInformationCircle,
+                          color: Theme.of(context).colorScheme.warning,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],

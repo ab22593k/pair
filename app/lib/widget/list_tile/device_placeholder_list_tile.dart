@@ -18,7 +18,7 @@ class DevicePlaceholderListTile extends StatelessWidget {
         durationMillis: 3000,
         running: animations,
         children: [
-          ...DeviceType.values.map((d) => Icon(d.icon, size: 46)),
+          ...DeviceType.values.map((d) => d.icon(context)),
         ],
       ),
       title: const Visibility(
@@ -26,7 +26,6 @@ class DevicePlaceholderListTile extends StatelessWidget {
         maintainSize: true,
         maintainAnimation: true,
         maintainState: true,
-        // A workaround to have an implicit height
         child: Text('A', style: TextStyle(fontSize: 20)),
       ),
       subTitle: Wrap(

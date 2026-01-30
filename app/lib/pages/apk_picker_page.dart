@@ -1,6 +1,7 @@
 import 'package:common/model/file_type.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/apk_provider.dart';
 import 'package:localsend_app/provider/selection/selected_sending_files_provider.dart';
@@ -118,7 +119,7 @@ class _ApkPickerPageState extends State<ApkPickerPage> with Refena {
               onPressed: () async => await _pickApps(_selectedApps),
               label: Row(
                 children: [
-                  const Icon(Icons.add),
+                  HugeIcon(icon: HugeIcons.strokeRoundedAdd01, color: Theme.of(context).iconTheme.color),
                   const SizedBox(width: 5),
                   Text('Add ${_selectedApps.length} ${(_selectedApps.length == 1) ? "App" : "Apps"}'),
                 ],
@@ -149,14 +150,14 @@ class _ApkPickerPageState extends State<ApkPickerPage> with Refena {
                       Theme.of(context).colorScheme.surfaceTint,
                       3,
                     ),
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: HugeIcon(icon: HugeIcons.strokeRoundedSearch01, color: Theme.of(context).iconTheme.color),
                     suffixIcon: apkParams.query.isNotEmpty
                         ? IconButton(
                             onPressed: () {
                               ref.notifier(apkSearchParamProvider).setState((old) => old.copyWith(query: ''));
                               _textController.clear();
                             },
-                            icon: const Icon(Icons.clear),
+                            icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color),
                           )
                         : Text(apkParams.query),
                   ),
@@ -252,10 +253,15 @@ class _ApkPickerPageState extends State<ApkPickerPage> with Refena {
                                 ),
                               ),
                               if (apkParams.selectMultipleApps)
-                                Icon(
-                                  _selectedApps.contains(app) ? Icons.check_circle : Icons.radio_button_unchecked,
-                                  color: _selectedApps.contains(app) ? Theme.of(context).iconTheme.color : Colors.grey,
-                                ),
+                                _selectedApps.contains(app)
+                                    ? HugeIcon(
+                                        icon: HugeIcons.strokeRoundedCheckmarkCircle01,
+                                        color: Theme.of(context).iconTheme.color,
+                                      )
+                                    : HugeIcon(
+                                        icon: HugeIcons.strokeRoundedRadioButton,
+                                        color: Colors.grey,
+                                      ),
                             ],
                           ),
                         ),

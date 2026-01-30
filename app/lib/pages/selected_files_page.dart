@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:common/model/file_type.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/selection/selected_sending_files_provider.dart';
 import 'package:localsend_app/util/file_size_helper.dart';
@@ -114,7 +115,7 @@ class SelectedFilesPage extends StatelessWidget {
                                       ref.redux(selectedSendingFilesProvider).dispatch(UpdateMessageAction(message: result, index: index));
                                     }
                                   },
-                                  child: const Icon(Icons.edit),
+                                  child: HugeIcon(icon: HugeIcons.strokeRoundedEdit01, color: Theme.of(context).iconTheme.color),
                                 ),
                               TextButton(
                                 style: TextButton.styleFrom(
@@ -127,7 +128,7 @@ class SelectedFilesPage extends StatelessWidget {
                                     context.popUntilRoot();
                                   }
                                 },
-                                child: const Icon(Icons.delete),
+                                child: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: Theme.of(context).iconTheme.color),
                               ),
                             ],
                           ),

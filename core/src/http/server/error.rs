@@ -17,7 +17,7 @@ pub enum AppError {
 }
 
 impl AppError {
-    pub(crate) fn to_response(self) -> Response<Full<Bytes>> {
+    pub(crate) fn into_response(self) -> Response<Full<Bytes>> {
         let json = match self {
             AppError::Hyper(_) => JsonResponse {
                 status: StatusCode::INTERNAL_SERVER_ERROR,

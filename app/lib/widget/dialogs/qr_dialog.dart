@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/state/send/web/web_send_state.dart';
@@ -77,7 +78,7 @@ class QrDialog extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.vpn_key),
+                  HugeIcon(icon: HugeIcons.strokeRoundedKey01, color: Theme.of(context).iconTheme.color),
                   const SizedBox(width: 5),
                   Text(pin!),
                 ],

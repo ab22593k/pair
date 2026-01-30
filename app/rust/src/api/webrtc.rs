@@ -1,6 +1,6 @@
 use crate::frb_generated::StreamSink;
 use bytes::Bytes;
-use flutter_rust_bridge::{frb, DartFnFuture};
+use flutter_rust_bridge::{DartFnFuture, frb};
 use localsend::crypto::token::SigningTokenKey;
 use localsend::model::discovery::DeviceType;
 use localsend::model::transfer::FileDto;
@@ -8,15 +8,16 @@ pub use localsend::webrtc::signaling::{
     ClientInfo, ClientInfoWithoutId, ManagedSignalingConnection, SignalingConnection,
     WsServerMessage, WsServerSdpMessage,
 };
-pub use localsend::webrtc::webrtc::{
-    PinConfig, RTCFile, RTCFileError, RTCSendFileResponse, RTCStatus,
+pub use localsend::webrtc::peer::{
+    PinConfig, RTCAcceptChannels, RTCAuthConfig, RTCFile, RTCFileError, RTCSendChannels, RTCSendFileResponse, RTCSignalingConfig, RTCStatus,
 };
 use std::collections::HashSet;
 use std::sync::Arc;
-use std::time::Duration;
-use tokio::sync::{mpsc, oneshot, Mutex};
-use tokio::time;
+use tokio::sync::{Mutex, mpsc, oneshot};
 use uuid::Uuid;
+
+// Type aliases for complex types
+type OptionalSender<T> = Arc<Mutex<Option<oneshot::Sender<T>>>>;
 
 pub struct ProposingClientInfo {
     pub alias: String,
@@ -32,7 +33,7 @@ impl ProposingClientInfo {
             version: self.version.clone(),
             device_model: self.device_model.clone(),
             device_type: self.device_type.clone(),
-            token: localsend::crypto::token::generate_token_timestamp(&signing_key)?,
+            token: localsend::crypto::token::generate_token_timestamp(signing_key)?,
         })
     }
 }
@@ -69,7 +70,7 @@ pub async fn connect(
     .await;
 
     while let Some(message) = rx.recv().await {
-        let _ = sink.add(message.into());
+        let _ = sink.add(message);
     }
 }
 
@@ -111,20 +112,26 @@ impl LsSignalingConnection {
         };
 
         tokio::spawn(async move {
-            let result = localsend::webrtc::webrtc::send_offer(
-                &managed_connection,
-                stun_servers,
-                target,
-                signing_key,
-                expecting_public_key,
-                pin,
+            let result = localsend::webrtc::peer::send_offer(
+                RTCSignalingConfig {
+                    signaling: &managed_connection,
+                    stun_servers,
+                    target_id: target,
+                },
+                RTCAuthConfig {
+                    signing_key,
+                    expecting_public_key,
+                    pin,
+                },
                 files,
-                status_tx.clone(),
-                selected_tx,
-                error_tx,
-                pin_tx,
-                pair_tx,
-                send_rx,
+                RTCSendChannels {
+                    status_tx: status_tx.clone(),
+                    selected_files_tx: selected_tx,
+                    error_tx,
+                    pin_tx,
+                    pair_tx,
+                    sending_rx: send_rx,
+                },
             )
             .await;
 
@@ -190,20 +197,27 @@ impl LsSignalingConnection {
         };
 
         tokio::spawn(async move {
-            let result = localsend::webrtc::webrtc::accept_offer(
-                &managed_connection,
-                stun_servers,
+            let result = localsend::webrtc::peer::accept_offer(
+                RTCSignalingConfig {
+                    signaling: &managed_connection,
+                    stun_servers,
+                    target_id: offer.peer.id,
+                },
                 &offer,
-                signing_key,
-                expecting_public_key,
-                pin,
-                status_tx.clone(),
-                files_tx,
-                selected_rx,
-                error_tx,
-                pin_tx,
-                receiving_tx,
-                file_status_rx,
+                RTCAuthConfig {
+                    signing_key,
+                    expecting_public_key,
+                    pin,
+                },
+                RTCAcceptChannels {
+                    status_tx: status_tx.clone(),
+                    files_tx,
+                    selected_files_rx: selected_rx,
+                    error_tx,
+                    pin_tx,
+                    receiving_tx,
+                    user_error_rx: file_status_rx,
+                },
             )
             .await;
 
@@ -314,7 +328,7 @@ impl RTCFileSender {
 pub struct RTCReceiveController {
     status_rx: Arc<Mutex<Option<mpsc::Receiver<RTCStatus>>>>,
     files_rx: Arc<Mutex<Option<oneshot::Receiver<Vec<FileDto>>>>>,
-    selected_tx: Arc<Mutex<Option<oneshot::Sender<Option<HashSet<String>>>>>>,
+    selected_tx: OptionalSender<Option<HashSet<String>>>,
     error_rx: Arc<Mutex<Option<mpsc::Receiver<RTCFileError>>>>,
     pin_tx: Arc<Mutex<Option<oneshot::Sender<String>>>>,
     receiving_rx: Arc<Mutex<Option<mpsc::Receiver<RTCFile>>>>,

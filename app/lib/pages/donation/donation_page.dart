@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/state/purchase_state.dart';
 import 'package:localsend_app/pages/donation/donation_page_vm.dart';
@@ -79,7 +80,7 @@ class _StoreDonation extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 10),
             child: FilledButton.icon(
               onPressed: vm.purchased.contains(item) ? null : () => vm.purchase(item),
-              icon: const Icon(Icons.favorite),
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedFavourite, color: Theme.of(context).iconTheme.color),
               label: Text(t.donationPage.donate(amount: vm.prices[item] ?? '...')),
             ),
           );
@@ -87,7 +88,7 @@ class _StoreDonation extends StatelessWidget {
         const SizedBox(height: 20),
         TextButton.icon(
           onPressed: vm.restore,
-          icon: const Icon(Icons.restore),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedRestoreBin, color: Theme.of(context).iconTheme.color),
           label: Text(t.donationPage.restore),
         ),
       ],
@@ -107,14 +108,14 @@ class _LinkDonation extends StatelessWidget {
           onPressed: () async {
             await launchUrl(Uri.parse('https://github.com/sponsors/Tienisto'), mode: LaunchMode.externalApplication);
           },
-          icon: const Icon(Icons.open_in_new),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedLinkForward, color: Theme.of(context).iconTheme.color),
           label: const Text('Github'),
         ),
         TextButton.icon(
           onPressed: () async {
             await launchUrl(Uri.parse('https://ko-fi.com/tienisto'), mode: LaunchMode.externalApplication);
           },
-          icon: const Icon(Icons.open_in_new),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedLinkForward, color: Theme.of(context).iconTheme.color),
           label: const Text('Ko-fi'),
         ),
       ],

@@ -23,7 +23,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::num::NonZeroUsize;
 use std::ops::Deref;
 use std::sync::Arc;
-use tokio::sync::{oneshot, Mutex};
+use tokio::sync::{Mutex, oneshot};
 
 #[derive(Clone)]
 struct AppState {
@@ -144,7 +144,7 @@ async fn start_server_with_addr(
                                 .deref()
                                 .deref()
                                 .peer_certificates()
-                                .map(|cert| cert.get(0).unwrap().to_vec()),
+                                .map(|cert| cert.first().unwrap().to_vec()),
                         }
                     };
 
@@ -188,8 +188,8 @@ async fn start_server_with_addr(
 
 fn create_tls_config(tls_config: &TlsConfig) -> anyhow::Result<tokio_rustls::TlsAcceptor> {
     let config = {
-        let certs = vec![CertificateDer::from_pem_slice(&tls_config.cert.as_bytes())?];
-        let key = PrivateKeyDer::from_pem_slice(&tls_config.private_key.as_bytes())?;
+        let certs = vec![CertificateDer::from_pem_slice(tls_config.cert.as_bytes())?];
+        let key = PrivateKeyDer::from_pem_slice(tls_config.private_key.as_bytes())?;
 
         rustls::ServerConfig::builder()
             .with_client_cert_verifier(Arc::new(CustomClientCertVerifier::try_new(
@@ -237,7 +237,7 @@ async fn handle_request(
         .await
         .unwrap_or_else(|err| {
             tracing::error!("Error handling request: {err:?}");
-            err.to_response()
+            err.into_response()
         }))
 }
 

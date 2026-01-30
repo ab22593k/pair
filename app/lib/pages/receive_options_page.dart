@@ -1,10 +1,11 @@
+import 'package:common/model/file_type.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/pages/receive_page.dart';
 import 'package:localsend_app/provider/network/server/server_provider.dart';
 import 'package:localsend_app/provider/selection/selected_receiving_files_provider.dart';
 import 'package:localsend_app/util/file_size_helper.dart';
-import 'package:localsend_app/util/file_type_ext.dart';
 import 'package:localsend_app/util/native/pick_directory_path.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/widget/custom_dropdown_button.dart';
@@ -50,7 +51,7 @@ class ReceiveOptionsPage extends StatelessWidget {
                         ref.notifier(serverProvider).setSessionDestinationDir(directory);
                       }
                     },
-                    child: const Icon(Icons.edit),
+                    child: HugeIcon(icon: HugeIcons.strokeRoundedEdit01, color: Theme.of(context).iconTheme.color),
                   ),
                 ),
             ],
@@ -105,7 +106,7 @@ class ReceiveOptionsPage extends StatelessWidget {
                   onPressed: () async {
                     await showDialog(context: context, builder: (_) => const QuickActionsDialog());
                   },
-                  child: const Icon(Icons.tips_and_updates),
+                  child: HugeIcon(icon: HugeIcons.strokeRoundedIdea01, color: Theme.of(context).iconTheme.color),
                 ),
               ),
               const SizedBox(width: 10),
@@ -113,7 +114,7 @@ class ReceiveOptionsPage extends StatelessWidget {
                 message: t.general.reset,
                 child: CustomIconButton(
                   onPressed: () => ref.notifier(selectedReceivingFilesProvider).setFiles(vm.files),
-                  child: const Icon(Icons.undo),
+                  child: HugeIcon(icon: HugeIcons.strokeRoundedUndo, color: Theme.of(context).iconTheme.color),
                 ),
               ),
             ],
@@ -125,7 +126,7 @@ class ReceiveOptionsPage extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(file.fileType.icon, size: 46),
+                  _FileTypeIcon(fileType: file.fileType, size: 46),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -167,7 +168,7 @@ class ReceiveOptionsPage extends StatelessWidget {
                                   ref.notifier(selectedReceivingFilesProvider).rename(file.id, result);
                                 }
                               },
-                        child: const Icon(Icons.edit),
+                        child: HugeIcon(icon: HugeIcons.strokeRoundedEdit01, color: Theme.of(context).iconTheme.color),
                       ),
                       Checkbox(
                         value: selectState.containsKey(file.id),
@@ -189,6 +190,29 @@ class ReceiveOptionsPage extends StatelessWidget {
           }),
         ],
       ),
+    );
+  }
+}
+
+class _FileTypeIcon extends StatelessWidget {
+  final FileType fileType;
+  final double size;
+
+  const _FileTypeIcon({required this.fileType, this.size = 32});
+
+  @override
+  Widget build(BuildContext context) {
+    return HugeIcon(
+      icon: switch (fileType) {
+        FileType.image => HugeIcons.strokeRoundedImage01,
+        FileType.video => HugeIcons.strokeRoundedVideo01,
+        FileType.pdf => HugeIcons.strokeRoundedFile01,
+        FileType.text => HugeIcons.strokeRoundedTextAlignLeft01,
+        FileType.apk => HugeIcons.strokeRoundedAndroid,
+        FileType.other => HugeIcons.strokeRoundedFile01,
+      },
+      color: Theme.of(context).iconTheme.color,
+      size: size,
     );
   }
 }
