@@ -153,6 +153,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
       try {
         response = await client.post(
           ApiRoute.prepareUpload.target(target),
+          // ignore: use_null_aware_elements
           query: {
             if (pin != null) 'pin': pin,
           },

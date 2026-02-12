@@ -115,7 +115,7 @@ class FilePathThumbnail extends StatelessWidget {
             _ContentUriImage(Uri.parse(path!)),
           ),
           gaplessPlayback: true, // Prevents flicker when image loads
-          errorBuilder: (_, __, ___) => Padding(
+          errorBuilder: (context, error, stackTrace) => Padding(
             padding: const EdgeInsets.all(10),
             child: _fileTypeIcon(fileType, context),
           ),
@@ -126,7 +126,7 @@ class FilePathThumbnail extends StatelessWidget {
           key: ValueKey('file://$path'),
           cacheWidth: 64,
           gaplessPlayback: true,
-          errorBuilder: (_, __, ___) => Padding(
+          errorBuilder: (context, error, stackTrace) => Padding(
             padding: const EdgeInsets.all(10),
             child: _fileTypeIcon(fileType, context),
           ),
@@ -167,7 +167,7 @@ class MemoryThumbnail extends StatelessWidget {
           bytes!,
           key: ValueKey('memory_$cacheKey'),
           gaplessPlayback: true,
-          errorBuilder: (_, __, ___) => Padding(
+          errorBuilder: (context, error, stackTrace) => Padding(
             padding: const EdgeInsets.all(10),
             child: _fileTypeIcon(fileType, context),
           ),

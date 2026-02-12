@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/init.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -16,6 +15,7 @@ import 'package:localsend_app/util/native/cross_file_converters.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/widget/responsive_builder.dart';
 import 'package:refena_flutter/refena_flutter.dart';
+import 'package:rhizu/rhizu.dart';
 
 enum HomeTab {
   receive,
@@ -117,11 +117,17 @@ class _HomePageState extends State<HomePage> with Refena {
                                       ? // considered adding some extra space so it looks more natural
                                         SizedBox(height: 40)
                                       : SizedBox(height: 20),
-                                  const Text(
+                                  Text(
                                     'LocalSend',
-                                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                                    style: GoogleFonts.plusJakartaSans(
+                                      textStyle: const TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: -1.5,
+                                      ),
+                                    ),
                                     textAlign: TextAlign.center,
-                                  ),
+                                  ).animate().fadeIn(duration: 800.ms).slideY(begin: -0.2, end: 0, curve: Curves.easeOutCubic),
                                   SizedBox(height: 20),
                                 ],
                               )

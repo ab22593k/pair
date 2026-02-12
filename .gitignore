@@ -10,3 +10,6 @@
 
 # FVM Version Cache
 .fvm/
+# pixi environments
+.pixi/*
+!.pixi/config.toml

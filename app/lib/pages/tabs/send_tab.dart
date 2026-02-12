@@ -36,6 +36,7 @@ import 'package:localsend_app/widget/rotating_widget.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:rhizu/rhizu.dart';
 import 'package:routerino/routerino.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 
 final _options = FilePickerOption.getOptionsForPlatform();
 
@@ -364,7 +365,7 @@ class _ActionGroup extends StatelessWidget {
           message: t.dialogs.favoriteDialog.title,
           child: CustomIconButton(
             onPressed: () async => await vm.onTapFavorite(context),
-            child: HugeIcon(icon: HugeIcons.strokeRoundedFavourite, color: colorScheme.primary),
+            child: Icon(HugeIconsSolid.favouriteCircle, color: colorScheme.primary),
           ),
         ),
         _SendModeButton(
@@ -442,7 +443,7 @@ class _ScanButton extends StatelessWidget {
               context.redux(nearbyDevicesProvider).dispatch(ClearFoundDevicesAction());
               await context.global.dispatchAsync(StartSmartScan(forceLegacy: true));
             },
-            child: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: iconColor),
+            child: Icon(HugeIconsSolid.refreshDot, color: iconColor),
           ),
         ),
       );

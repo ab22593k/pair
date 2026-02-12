@@ -33,8 +33,8 @@ class CustomListTile extends StatelessWidget {
           padding: padding,
           child: Row(
             children: [
-              if (icon != null) ...[
-                icon!,
+              if (icon case final i?) ...[
+                i,
                 const SizedBox(width: 15),
               ],
               Expanded(
@@ -50,7 +50,7 @@ class CustomListTile extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailing != null) trailing!,
+              ?trailing,
             ],
           ),
         ),

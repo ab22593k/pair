@@ -31,7 +31,7 @@ tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.20" }
 tungstenite = "0.28.0"
 uuid = { version = "1.20.0", features = ["serde", "v4"] }
-webrtc = { version = "0.14.0", optional = true, features = ["openssl", "pem"] }
+webrtc = { version = "0.14.0", optional = true, features = ["vendored-openssl", "pem"] }
 x509-parser = { version = "0.18.0", features = ["verify"], optional = true }
 
 [features]
