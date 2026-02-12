@@ -8,7 +8,6 @@ import 'package:common/model/session_status.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/state/server/receive_session_state.dart';
 import 'package:localsend_app/provider/network/send_provider.dart';
@@ -23,7 +22,6 @@ import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/util/native/taskbar_helper.dart';
 import 'package:localsend_app/util/ui/nav_bar_padding.dart';
 import 'package:localsend_app/widget/custom_basic_appbar.dart';
-import 'package:localsend_app/widget/custom_progress_bar.dart';
 import 'package:localsend_app/widget/dialogs/cancel_session_dialog.dart';
 import 'package:localsend_app/widget/dialogs/error_dialog.dart';
 import 'package:localsend_app/widget/file_thumbnail.dart';
@@ -245,9 +243,9 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
             ListView.builder(
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 20,
-                bottom: 150 + getNavBarPadding(context),
+                bottom: 200 + getNavBarPadding(context), // Increased bottom padding for the floating card
                 left: 15,
-                right: 30,
+                right: 15,
               ),
               itemCount: _files.length + 2,
               itemBuilder: (context, index) {
@@ -258,25 +256,33 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                   }
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
+                    padding: const EdgeInsets.only(bottom: 20, left: 5),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: Theme.of(context).textTheme.titleLarge),
+                        Text(
+                          title,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         if (checkPlatformWithFileSystem() && receiveSession != null)
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.only(top: 8),
                             child: Text.rich(
                               TextSpan(
                                 children: [
                                   TextSpan(
                                     text: '${t.settingsTab.receive.destination}: ',
-                                    style: const TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                                   ),
                                   TextSpan(
                                     text: receiveSession.destinationDirectory,
                                     style: TextStyle(
-                                      color: checkPlatform([TargetPlatform.iOS]) ? Colors.grey : Theme.of(context).colorScheme.primary,
+                                      color: checkPlatform([TargetPlatform.iOS])
+                                          ? Theme.of(context).colorScheme.onSurface
+                                          : Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                     recognizer: checkPlatform([TargetPlatform.iOS])
                                         ? null
@@ -287,6 +293,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                                   ),
                                 ],
                               ),
+                              style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ),
                       ],
@@ -301,7 +308,21 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                     return Container();
                   }
 
-                  return SelectableText(errorMessage, style: TextStyle(color: Theme.of(context).colorScheme.warning));
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 15),
+                    child: Card(
+                      color: Theme.of(context).colorScheme.errorContainer,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SelectableText(
+                          errorMessage,
+                          style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
+                        ),
+                      ),
+                    ),
+                  );
                 }
 
                 final file = _files[index - 2];
@@ -338,100 +359,28 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                   asset = null;
                 }
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    splashFactory: NoSplash.splashFactory,
-                    highlightColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    onTap: filePath != null && receiveSession != null ? () async => openFile(context, file.fileType, filePath!) : null,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SmartFileThumbnail(
-                          bytes: thumbnail,
-                          asset: asset,
-                          path: filePath,
-                          fileType: file.fileType,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      fileName,
-                                      style: const TextStyle(fontSize: 16, height: 1),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.fade,
-                                      softWrap: false,
-                                    ),
-                                  ),
-                                  Text(' (${file.size.asReadableFileSize})', style: const TextStyle(fontSize: 16, height: 1)),
-                                ],
-                              ),
-                              const SizedBox(height: 5),
-                              if (fileStatus == FileStatus.sending)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 5),
-                                  child: CustomProgressBar(
-                                    progress: progressNotifier.getProgress(sessionId: widget.sessionId, fileId: file.id),
-                                  ),
-                                )
-                              else
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        savedToGallery ? t.progressPage.savedToGallery : fileStatus.label,
-                                        style: TextStyle(color: fileStatus.getColor(context), height: 1),
-                                      ),
-                                    ),
-                                    if (errorMessage != null) ...[
-                                      const SizedBox(width: 5),
-                                      InkWell(
-                                        onTap: () async {
-                                          await showDialog(
-                                            context: context,
-                                            builder: (_) => ErrorDialog(error: errorMessage!),
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                                          child: HugeIcon(
-                                            icon: HugeIcons.strokeRoundedInformationCircle,
-                                            color: Theme.of(context).colorScheme.warning,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (sendSession != null && fileStatus == FileStatus.failed)
-                          IconButton(
-                            icon: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: Theme.of(context).iconTheme.color),
-                            onPressed: () async {
-                              await ref
-                                  .notifier(sendProvider)
-                                  .sendFile(
-                                    sessionId: widget.sessionId,
-                                    isolateIndex: 0,
-                                    file: sendSession.files[file.id]!,
-                                    isRetry: true,
-                                  );
-                            },
-                          ),
-                      ],
-                    ),
-                  ),
+                return _FileListItem(
+                  file: file,
+                  fileName: fileName,
+                  fileStatus: fileStatus,
+                  savedToGallery: savedToGallery,
+                  filePath: filePath,
+                  errorMessage: errorMessage,
+                  thumbnail: thumbnail,
+                  asset: asset,
+                  progress: progressNotifier.getProgress(sessionId: widget.sessionId, fileId: file.id),
+                  onRetry: sendSession != null && fileStatus == FileStatus.failed
+                      ? () async {
+                          await ref
+                              .notifier(sendProvider)
+                              .sendFile(
+                                sessionId: widget.sessionId,
+                                isolateIndex: 0,
+                                file: sendSession.files[file.id]!,
+                                isRetry: true,
+                              );
+                        }
+                      : null,
                 );
               },
             ),
@@ -439,111 +388,354 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 15, right: 15, bottom: 5, top: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            status.getLabel(
-                              remainingTime: _remainingTime ?? '-',
-                            ),
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                          const SizedBox(height: 5),
-                          TweenAnimationBuilder(
-                            tween: Tween<double>(begin: 0, end: _totalBytes == 0 ? 0 : currBytes / _totalBytes),
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.easeOut,
-                            builder: (context, value, child) {
-                              return CustomProgressBar(
-                                progress: value,
-                                borderRadius: 5,
-                              );
-                            },
-                          ),
-                          AnimatedCrossFade(
-                            crossFadeState: _advanced ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                            duration: const Duration(milliseconds: 200),
-                            alignment: Alignment.topLeft,
-                            firstChild: Container(),
-                            secondChild: Padding(
-                              padding: const EdgeInsets.only(top: 10, bottom: 5),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    t.progressPage.total.count(
-                                      curr: finishedCount,
-                                      n: _selectedFiles.length,
-                                    ),
-                                  ),
-                                  Text(
-                                    t.progressPage.total.size(
-                                      curr: currBytes.asReadableFileSize,
-                                      n: _totalBytes == double.maxFinite.toInt() ? '-' : _totalBytes.asReadableFileSize,
-                                    ),
-                                  ),
-                                  if (speedInBytes != null)
-                                    Text(
-                                      t.progressPage.total.speed(
-                                        speed: speedInBytes.asReadableFileSize,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton.icon(
-                                style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface),
-                                onPressed: () {
-                                  setState(() => _advanced = !_advanced);
-                                },
-                                icon: HugeIcon(icon: HugeIcons.strokeRoundedInformationCircle, color: Theme.of(context).iconTheme.color),
-                                label: Text(_advanced ? t.general.hide : t.general.advanced),
-                              ),
-                              TextButton.icon(
-                                style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface),
-                                onPressed: () => _exit(closeSession: true),
-                                icon: status == SessionStatus.sending
-                                    ? HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).iconTheme.color)
-                                    : HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkCircle01, color: Theme.of(context).iconTheme.color),
-                                label: Text(
-                                  status == SessionStatus.sending
-                                      ? t.general.cancel
-                                      : _finishTimer != null
-                                      ? '${t.general.done} ($_finishCounter)'
-                                      : t.general.done,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: _BottomProgressCard(
+                    status: status,
+                    currBytes: currBytes,
+                    totalBytes: _totalBytes,
+                    remainingTime: _remainingTime,
+                    finishedCount: finishedCount,
+                    totalCount: _selectedFiles.length,
+                    speedInBytes: speedInBytes,
+                    advanced: _advanced,
+                    onToggleAdvanced: () => setState(() => _advanced = !_advanced),
+                    onExit: () => _exit(closeSession: true),
+                    finishTimer: _finishTimer,
+                    finishCounter: _finishCounter,
                   ),
                 ),
               ),
             ),
-            checkPlatform([TargetPlatform.macOS])
-                ? Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 40,
-                    child: MoveWindow(),
-                  )
-                : SizedBox(),
+            if (checkPlatform([TargetPlatform.macOS]))
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 40,
+                child: MoveWindow(),
+              ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FileListItem extends StatelessWidget {
+  final FileDto file;
+  final String fileName;
+  final FileStatus fileStatus;
+  final bool savedToGallery;
+  final String? filePath;
+  final String? errorMessage;
+  final Uint8List? thumbnail;
+  final AssetEntity? asset;
+  final double progress;
+  final VoidCallback? onRetry;
+
+  const _FileListItem({
+    required this.file,
+    required this.fileName,
+    required this.fileStatus,
+    required this.savedToGallery,
+    required this.filePath,
+    required this.errorMessage,
+    required this.thumbnail,
+    required this.asset,
+    required this.progress,
+    this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Card(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: filePath != null ? () async => openFile(context, file.fileType, filePath!) : null,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SmartFileThumbnail(
+                  bytes: thumbnail,
+                  asset: asset,
+                  path: filePath,
+                  fileType: file.fileType,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              fileName,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.fade,
+                              softWrap: false,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            file.size.asReadableFileSize,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (fileStatus == FileStatus.sending)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              minHeight: 8,
+                              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        )
+                      else
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                savedToGallery ? t.progressPage.savedToGallery : fileStatus.label,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: fileStatus.getColor(context),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            if (errorMessage != null) ...[
+                              const SizedBox(width: 5),
+                              InkWell(
+                                onTap: () async {
+                                  await showDialog(
+                                    context: context,
+                                    builder: (_) => ErrorDialog(error: errorMessage!),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                                  child: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedInformationCircle,
+                                    color: Theme.of(context).colorScheme.error,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+                if (onRetry != null)
+                  IconButton(
+                    icon: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: Theme.of(context).colorScheme.primary),
+                    onPressed: onRetry,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomProgressCard extends StatelessWidget {
+  final SessionStatus status;
+  final int currBytes;
+  final int totalBytes;
+  final String? remainingTime;
+  final int finishedCount;
+  final int totalCount;
+  final int? speedInBytes;
+  final bool advanced;
+  final VoidCallback onToggleAdvanced;
+  final VoidCallback onExit;
+  final Timer? finishTimer;
+  final int finishCounter;
+
+  const _BottomProgressCard({
+    required this.status,
+    required this.currBytes,
+    required this.totalBytes,
+    required this.remainingTime,
+    required this.finishedCount,
+    required this.totalCount,
+    required this.speedInBytes,
+    required this.advanced,
+    required this.onToggleAdvanced,
+    required this.onExit,
+    required this.finishTimer,
+    required this.finishCounter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    status.getLabel(remainingTime: remainingTime ?? '-'),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (status == SessionStatus.sending)
+                  Tooltip(
+                    message: t.general.cancel,
+                    child: IconButton.filledTonal(
+                      onPressed: onExit,
+                      icon: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedCancel01,
+                        size: 20,
+                      ),
+                    ),
+                  )
+                else
+                  FilledButton.icon(
+                    onPressed: onExit,
+                    icon: const HugeIcon(
+                      icon: HugeIcons.strokeRoundedCheckmarkCircle01,
+                      size: 20,
+                    ),
+                    label: Text(
+                      finishTimer != null ? '${t.general.done} ($finishCounter)' : t.general.done,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TweenAnimationBuilder(
+              tween: Tween<double>(begin: 0, end: totalBytes == 0 ? 0 : currBytes / totalBytes),
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              builder: (context, value, child) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: value,
+                    minHeight: 12,
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                );
+              },
+            ),
+            AnimatedCrossFade(
+              crossFadeState: advanced ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
+              alignment: Alignment.topLeft,
+              firstChild: Container(),
+              secondChild: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Column(
+                  children: [
+                    _InfoRow(
+                      label: t.progressPage.total.count(
+                        curr: finishedCount,
+                        n: totalCount,
+                      ),
+                      icon: HugeIcons.strokeRoundedFile01,
+                    ),
+                    const SizedBox(height: 8),
+                    _InfoRow(
+                      label: t.progressPage.total.size(
+                        curr: currBytes.asReadableFileSize,
+                        n: totalBytes == double.maxFinite.toInt() ? '-' : totalBytes.asReadableFileSize,
+                      ),
+                      icon: HugeIcons.strokeRoundedDatabase01,
+                    ),
+                    if (speedInBytes != null) ...[
+                      const SizedBox(height: 8),
+                      _InfoRow(
+                        label: t.progressPage.total.speed(
+                          speed: speedInBytes!.asReadableFileSize,
+                        ),
+                        icon: HugeIcons.strokeRoundedRocket,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Center(
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                onPressed: onToggleAdvanced,
+                icon: HugeIcon(
+                  icon: advanced ? HugeIcons.strokeRoundedArrowUp01 : HugeIcons.strokeRoundedArrowDown01,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                label: Text(advanced ? t.general.hide : t.general.advanced),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final dynamic icon;
+
+  const _InfoRow({
+    required this.label,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        HugeIcon(
+          icon: icon,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -569,11 +761,11 @@ extension on FileStatus {
       case FileStatus.queue:
         return Theme.of(context).colorScheme.primary;
       case FileStatus.skipped:
-        return Colors.grey;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
       case FileStatus.sending:
         return Theme.of(context).colorScheme.primary;
       case FileStatus.failed:
-        return Theme.of(context).colorScheme.warning;
+        return Theme.of(context).colorScheme.error;
       case FileStatus.finished:
         return Theme.of(context).colorScheme.primary;
     }

@@ -155,7 +155,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
           ApiRoute.prepareUpload.target(target),
           // ignore: use_null_aware_elements
           query: {
-            if (pin != null) 'pin': pin,
+            'pin': ?pin,
           },
           body: HttpBody.json(requestDto.toJson()),
           cancelToken: cancelToken,

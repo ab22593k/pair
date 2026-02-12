@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/send_mode.dart';
@@ -36,7 +37,6 @@ import 'package:localsend_app/widget/rotating_widget.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:rhizu/rhizu.dart';
 import 'package:routerino/routerino.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
 
 final _options = FilePickerOption.getOptionsForPlatform();
 
