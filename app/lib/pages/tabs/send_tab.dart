@@ -3,7 +3,6 @@ import 'package:collection/collection.dart';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/send_mode.dart';
@@ -21,6 +20,7 @@ import 'package:localsend_app/util/favorites.dart';
 import 'package:localsend_app/util/file_size_helper.dart';
 import 'package:localsend_app/util/native/file_picker.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
+import 'package:localsend_app/widget/animations/initial_fade_transition.dart';
 import 'package:localsend_app/widget/big_button.dart';
 import 'package:localsend_app/widget/custom_icon_button.dart';
 import 'package:localsend_app/widget/dialogs/add_file_dialog.dart';
@@ -34,10 +34,20 @@ import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:localsend_app/widget/responsive_wrap_view.dart';
 import 'package:localsend_app/widget/rotating_widget.dart';
 import 'package:refena_flutter/refena_flutter.dart';
+import 'package:rhizu/rhizu.dart';
 import 'package:routerino/routerino.dart';
 
-const _horizontalPadding = 15.0;
 final _options = FilePickerOption.getOptionsForPlatform();
+
+/// Expressive spacing tokens for consistent layout
+class _ExpressiveSpacing {
+  static const double xs = 4;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 24;
+  static const double xl = 32;
+  static const double xxl = 48;
+}
 
 class SendTab extends StatelessWidget {
   const SendTab();
@@ -51,24 +61,32 @@ class SendTab extends StatelessWidget {
         final sizingInformation = SizingInformation(MediaQuery.sizeOf(context).width);
         final buttonWidth = sizingInformation.isDesktop ? BigButton.desktopWidth : BigButton.mobileWidth;
         final ref = context.ref;
+        final colorScheme = Theme.of(context).colorScheme;
+
         return Stack(
           children: [
             ResponsiveListView(
               padding: EdgeInsets.zero,
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: _ExpressiveSpacing.xl),
                 if (vm.selectedFiles.isEmpty) ...[
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                    padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
                     child: Text(
                       t.sendTab.selection.title,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: GoogleFonts.plusJakartaSans(
+                        textStyle: Theme.of(context).textTheme.headlineSmall,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
+                  const SizedBox(height: _ExpressiveSpacing.md),
                   ResponsiveWrapView(
-                    outerHorizontalPadding: 15,
-                    outerVerticalPadding: 10,
-                    childPadding: 10,
+                    outerHorizontalPadding: _ExpressiveSpacing.lg,
+                    outerVerticalPadding: _ExpressiveSpacing.sm,
+                    childPadding: _ExpressiveSpacing.md,
                     minChildWidth: buttonWidth,
                     children: _options.map((option) {
                       return BigButton(
@@ -85,167 +103,209 @@ class SendTab extends StatelessWidget {
                     }).toList(),
                   ),
                 ] else ...[
-                  Card(
-                    margin: const EdgeInsets.only(bottom: 10, left: _horizontalPadding, right: _horizontalPadding),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.only(start: 15, top: 5, bottom: 15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                t.sendTab.selection.title,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const Spacer(),
-                              CustomIconButton(
-                                onPressed: () => ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction()),
-                                child: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Theme.of(context).colorScheme.secondary),
-                              ),
-                              const SizedBox(width: 5),
-                            ],
-                          ),
-                          const SizedBox(height: 5),
-                          Text(t.sendTab.selection.files(files: vm.selectedFiles.length)),
-                          Text(t.sendTab.selection.size(size: vm.selectedFiles.fold(0, (prev, curr) => prev + curr.size).asReadableFileSize)),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: defaultThumbnailSize,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              cacheExtent: defaultThumbnailSize * 3, // Pre-load 3 items ahead/behind for smoother scrolling
-                              itemCount: vm.selectedFiles.length,
-                              itemBuilder: (context, index) {
-                                final file = vm.selectedFiles[index];
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 10),
-                                  child: SmartFileThumbnail.fromCrossFile(file),
-                                );
-                              },
+                  InitialFadeTransition(
+                    duration: const Duration(milliseconds: 400),
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
+                      elevation: 0,
+                      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: ShapeTokens.borderRadiusLarge,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(_ExpressiveSpacing.lg),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                HugeIcon(
+                                  icon: HugeIcons.strokeRoundedFiles02,
+                                  color: colorScheme.primary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: _ExpressiveSpacing.sm),
+                                Text(
+                                  t.sendTab.selection.title,
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                                const Spacer(),
+                                CustomIconButton(
+                                  onPressed: () => ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction()),
+                                  child: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: colorScheme.secondary),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Theme.of(context).colorScheme.onSurface,
-                                ),
-                                onPressed: () async {
-                                  await context.push(() => const SelectedFilesPage());
-                                },
-                                child: Text(t.general.edit),
-                              ),
-                              const SizedBox(width: 15),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.primary,
-                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                                ),
-                                onPressed: () async {
-                                  if (_options.length == 1) {
-                                    // open directly
-                                    await ref.global.dispatchAsync(
-                                      PickFileAction(
-                                        option: _options.first,
-                                        context: context,
+                            const SizedBox(height: _ExpressiveSpacing.md),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        t.sendTab.selection.files(files: vm.selectedFiles.length),
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    );
-                                    return;
-                                  }
-                                  await AddFileDialog.open(
-                                    context: context,
-                                    options: _options,
+                                      Text(
+                                        vm.selectedFiles.fold(0, (prev, curr) => prev + curr.size).asReadableFileSize,
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: _ExpressiveSpacing.lg),
+                            SizedBox(
+                              height: defaultThumbnailSize + 10,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: vm.selectedFiles.length,
+                                itemBuilder: (context, index) {
+                                  final file = vm.selectedFiles[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: _ExpressiveSpacing.sm),
+                                    child: SmartFileThumbnail.fromCrossFile(file),
                                   );
                                 },
-                                icon: HugeIcon(icon: HugeIcons.strokeRoundedAdd01, color: Theme.of(context).iconTheme.color),
-                                label: Text(t.general.add),
                               ),
-                              const SizedBox(width: 15),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(height: _ExpressiveSpacing.md),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: colorScheme.onSurface,
+                                  ),
+                                  onPressed: () async {
+                                    await context.push(() => const SelectedFilesPage());
+                                  },
+                                  child: Text(t.general.edit),
+                                ),
+                                const SizedBox(width: _ExpressiveSpacing.md),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colorScheme.primary,
+                                    foregroundColor: colorScheme.onPrimary,
+                                    elevation: 0,
+                                    shape: const StadiumBorder(),
+                                  ),
+                                  onPressed: () async {
+                                    if (_options.length == 1) {
+                                      // open directly
+                                      await ref.global.dispatchAsync(
+                                        PickFileAction(
+                                          option: _options.first,
+                                          context: context,
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    await AddFileDialog.open(
+                                      context: context,
+                                      options: _options,
+                                    );
+                                  },
+                                  icon: HugeIcon(icon: HugeIcons.strokeRoundedAdd01, color: colorScheme.onPrimary),
+                                  label: Text(t.general.add),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ],
-                Row(
-                  children: [
-                    const SizedBox(width: _horizontalPadding),
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Text(t.sendTab.nearbyDevices, style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: _ExpressiveSpacing.xl),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          t.sendTab.nearbyDevices,
+                          style: GoogleFonts.plusJakartaSans(
+                            textStyle: Theme.of(context).textTheme.titleLarge,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    _ScanButton(
-                      ips: vm.localIps,
-                    ),
-                    Tooltip(
-                      message: t.sendTab.manualSending,
-                      child: CustomIconButton(
-                        onPressed: () async => vm.onTapAddress(context),
-                        child: HugeIcon(icon: HugeIcons.strokeRoundedCursorPointer01, color: Theme.of(context).iconTheme.color),
-                      ),
-                    ),
-                    Tooltip(
-                      message: t.dialogs.favoriteDialog.title,
-                      child: CustomIconButton(
-                        onPressed: () async => await vm.onTapFavorite(context),
-                        child: HugeIcon(icon: HugeIcons.strokeRoundedFavourite, color: Theme.of(context).iconTheme.color),
-                      ),
-                    ),
-                    _SendModeButton(
-                      onSelect: (mode) async => vm.onTapSendMode(context, mode),
-                    ),
-                  ],
+                      _ScanButton(ips: vm.localIps),
+                      const SizedBox(width: _ExpressiveSpacing.xs),
+                      _ActionGroup(vm: vm),
+                    ],
+                  ),
                 ),
+                const SizedBox(height: _ExpressiveSpacing.md),
                 if (vm.nearbyDevices.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 10, left: _horizontalPadding, right: _horizontalPadding),
-                    child: Opacity(
-                      opacity: 0.3,
-                      child: DevicePlaceholderListTile(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
+                    child: InitialFadeTransition(
+                      duration: const Duration(milliseconds: 400),
+                      delay: const Duration(milliseconds: 200),
+                      child: const Opacity(
+                        opacity: 0.3,
+                        child: DevicePlaceholderListTile(),
+                      ),
                     ),
                   ),
-                ...vm.nearbyDevices.map((device) {
+                ...vm.nearbyDevices.indexed.map((record) {
+                  final (index, device) = record;
                   final favoriteEntry = vm.favoriteDevices.findDevice(device);
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 10, left: _horizontalPadding, right: _horizontalPadding),
-                    child: Hero(
-                      tag: 'device-${device.ip}',
-                      child: vm.sendMode == SendMode.multiple
-                          ? _MultiSendDeviceListTile(
-                              device: device,
-                              isFavorite: favoriteEntry != null,
-                              nameOverride: favoriteEntry?.alias,
-                              vm: vm,
-                            )
-                          : DeviceListTile(
-                              device: device,
-                              isFavorite: favoriteEntry != null,
-                              nameOverride: favoriteEntry?.alias,
-                              onFavoriteTap: () async => await vm.onToggleFavorite(context, device),
-                              onTap: () async => await vm.onTapDevice(context, device),
-                            ),
+                    padding: const EdgeInsets.only(bottom: _ExpressiveSpacing.sm, left: _ExpressiveSpacing.lg, right: _ExpressiveSpacing.lg),
+                    child: InitialFadeTransition(
+                      duration: const Duration(milliseconds: 400),
+                      delay: Duration(milliseconds: 100 * (index + 1)),
+                      child: Hero(
+                        tag: 'device-${device.ip}',
+                        child: vm.sendMode == SendMode.multiple
+                            ? _MultiSendDeviceListTile(
+                                device: device,
+                                isFavorite: favoriteEntry != null,
+                                nameOverride: favoriteEntry?.alias,
+                                vm: vm,
+                              )
+                            : DeviceListTile(
+                                device: device,
+                                isFavorite: favoriteEntry != null,
+                                nameOverride: favoriteEntry?.alias,
+                                onFavoriteTap: () async => await vm.onToggleFavorite(context, device),
+                                onTap: () async => await vm.onTapDevice(context, device),
+                              ),
+                      ),
                     ),
                   );
                 }),
-                const SizedBox(height: 10),
+                const SizedBox(height: _ExpressiveSpacing.lg),
                 Center(
-                  child: TextButton(
+                  child: TextButton.icon(
                     onPressed: () async {
                       await context.push(() => const TroubleshootPage());
                     },
-                    child: Text(t.troubleshootPage.title),
+                    icon: const HugeIcon(icon: HugeIcons.strokeRoundedSettings01, size: 16),
+                    label: Text(t.troubleshootPage.title),
+                    style: TextButton.styleFrom(
+                      foregroundColor: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: _ExpressiveSpacing.xl),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+                  padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
                   child: Consumer(
                     builder: (context, ref) {
                       final animations = ref.watch(animationProvider);
@@ -255,13 +315,13 @@ class SendTab extends StatelessWidget {
                         children: [
                           Text(
                             t.sendTab.help,
-                            style: const TextStyle(color: Colors.grey),
+                            style: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
                             textAlign: TextAlign.center,
                           ),
                           if (checkPlatformCanReceiveShareIntent())
                             Text(
                               t.sendTab.shareIntentInfo,
-                              style: const TextStyle(color: Colors.grey),
+                              style: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
                               textAlign: TextAlign.center,
                             ),
                         ],
@@ -269,19 +329,48 @@ class SendTab extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: _ExpressiveSpacing.xxl),
               ],
             ),
             // make the top draggable on Desktop
-            checkPlatform([TargetPlatform.macOS])
-                ? SizedBox(height: 50, child: MoveWindow())
-                : SizedBox(
-                    height: 0,
-                    width: 0,
-                  ),
+            if (checkPlatform([TargetPlatform.macOS])) SizedBox(height: 50, child: MoveWindow()) else const SizedBox.shrink(),
           ],
         );
       },
+    );
+  }
+}
+
+/// Grouped actions for cleaner UI
+class _ActionGroup extends StatelessWidget {
+  final SendTabVm vm;
+
+  const _ActionGroup({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Tooltip(
+          message: t.sendTab.manualSending,
+          child: CustomIconButton(
+            onPressed: () async => vm.onTapAddress(context),
+            child: HugeIcon(icon: HugeIcons.strokeRoundedCursorPointer01, color: colorScheme.primary),
+          ),
+        ),
+        Tooltip(
+          message: t.dialogs.favoriteDialog.title,
+          child: CustomIconButton(
+            onPressed: () async => await vm.onTapFavorite(context),
+            child: HugeIcon(icon: HugeIcons.strokeRoundedFavourite, color: colorScheme.primary),
+          ),
+        ),
+        _SendModeButton(
+          onSelect: (mode) async => vm.onTapSendMode(context, mode),
+        ),
+      ],
     );
   }
 }
