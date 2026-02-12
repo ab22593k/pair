@@ -1,8 +1,9 @@
 import 'dart:convert' show jsonDecode, utf8;
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:isolate';
 
 import 'package:common/model/file_type.dart';
+import 'package:flutter/services.dart';
 import 'package:localsend_app/model/cross_file.dart';
 import 'package:localsend_app/util/file_path_helper.dart';
 import 'package:localsend_app/util/native/cache_helper.dart';
@@ -145,7 +146,84 @@ class AddFilesAction<T> extends AsyncReduxAction<SelectedSendingFilesNotifier, L
   }
 }
 
+/// Data class for isolate-based directory scanning
+class _DirectoryScanParams {
+  final String directoryPath;
+  final RootIsolateToken rootIsolateToken;
+
+  _DirectoryScanParams({
+    required this.directoryPath,
+    required this.rootIsolateToken,
+  });
+}
+
+/// Result of directory scanning from isolate
+class _DirectoryScanResult {
+  final List<CrossFile> files;
+  final List<String> logs;
+
+  _DirectoryScanResult({
+    required this.files,
+    required this.logs,
+  });
+}
+
+/// Isolate entry point for directory scanning
+Future<_DirectoryScanResult> _scanDirectoryInIsolate(_DirectoryScanParams params) async {
+  // Initialize isolate binding for file operations
+  BackgroundIsolateBinaryMessenger.ensureInitialized(params.rootIsolateToken);
+
+  final files = <CrossFile>[];
+  final logs = <String>[];
+  final directoryName = p.basename(params.directoryPath);
+  final sendIgnore = SendIgnore();
+
+  await for (final entity in Directory(params.directoryPath).list(recursive: true)) {
+    if (entity is File) {
+      final innerRelative = p.relative(entity.path, from: params.directoryPath).replaceAll('\\', '/');
+      final relative = '$directoryName/$innerRelative';
+
+      if (sendIgnore.isIgnoreFile(p.basename(entity.path))) {
+        try {
+          sendIgnore.loadIgnoreContent(
+            parentPath: innerRelative.contains('/') ? p.dirname(innerRelative) : null,
+            ignoreContents: await entity.readAsLines(),
+          );
+          logs.add('Loaded ignore file: $innerRelative');
+        } catch (e) {
+          logs.add('Failed to load ignore file: $innerRelative - $e');
+        }
+        continue;
+      } else if (sendIgnore.isIgnored(innerRelative)) {
+        logs.add('Ignored: $innerRelative');
+        continue;
+      }
+
+      logs.add('Add file $relative');
+
+      // Use async file operations to avoid blocking
+      final stat = await entity.stat();
+      final file = CrossFile(
+        name: relative,
+        fileType: relative.guessFileType(),
+        size: stat.size,
+        thumbnail: null,
+        asset: null,
+        path: entity.path,
+        bytes: null,
+        lastModified: stat.modified.toUtc(),
+        lastAccessed: stat.accessed.toUtc(),
+      );
+
+      files.add(file);
+    }
+  }
+
+  return _DirectoryScanResult(files: files, logs: logs);
+}
+
 /// Adds files inside the directory recursively.
+/// Uses isolate for scanning to avoid blocking the UI thread.
 class AddDirectoryAction extends AsyncReduxAction<SelectedSendingFilesNotifier, List<CrossFile>> {
   final String directoryPath;
 
@@ -153,46 +231,26 @@ class AddDirectoryAction extends AsyncReduxAction<SelectedSendingFilesNotifier, 
 
   @override
   Future<List<CrossFile>> reduce() async {
-    _logger.info('Reading files in $directoryPath');
-    final newFiles = <CrossFile>[];
-    final directoryName = p.basename(directoryPath);
-    final sendIgnore = SendIgnore();
-    await for (final entity in Directory(directoryPath).list(recursive: true)) {
-      if (entity is File) {
-        final innerRelative = p.relative(entity.path, from: directoryPath).replaceAll('\\', '/');
-        final relative = '$directoryName/$innerRelative';
-        if (sendIgnore.isIgnoreFile(p.basename(entity.path))) {
-          sendIgnore.loadIgnoreContent(
-            parentPath: innerRelative.contains('/') ? p.dirname(innerRelative) : null,
-            ignoreContents: await entity.readAsLines(),
-          );
-          _logger.info('Loaded ignore file: $innerRelative');
-          continue;
-        } else if (sendIgnore.isIgnored(innerRelative)) {
-          _logger.info('Ignored: $innerRelative');
-          continue;
-        }
+    _logger.info('Reading files in $directoryPath (using isolate)');
 
-        _logger.info('Add file $relative');
+    final rootIsolateToken = ServicesBinding.rootIsolateToken!;
+    final params = _DirectoryScanParams(
+      directoryPath: directoryPath,
+      rootIsolateToken: rootIsolateToken,
+    );
 
-        final file = CrossFile(
-          name: relative,
-          fileType: relative.guessFileType(),
-          size: entity.lengthSync(),
-          thumbnail: null,
-          asset: null,
-          path: entity.path,
-          bytes: null,
-          lastModified: entity.lastModifiedSync().toUtc(),
-          lastAccessed: entity.lastAccessedSync().toUtc(),
-        );
+    // Run directory scanning in isolate to avoid blocking UI
+    final result = await Isolate.run(() => _scanDirectoryInIsolate(params));
 
-        final isAlreadySelect = state.any((element) => element.isSameFile(otherFile: file));
-        if (!isAlreadySelect) {
-          newFiles.add(file);
-        }
-      }
+    // Log results from isolate
+    for (final log in result.logs) {
+      _logger.info(log);
     }
+
+    // Filter out already selected files
+    final newFiles = result.files.where((file) {
+      return !state.any((element) => element.isSameFile(otherFile: file));
+    }).toList();
 
     return List.unmodifiable([
       ...state,

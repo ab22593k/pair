@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -28,6 +29,20 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 import 'package:uuid/uuid.dart';
 
 part 'persistence_provider_migrations.dart';
+
+/// Pending write operation for batching
+class _PendingWrite {
+  final String key;
+  final dynamic value;
+  final _WriteType type;
+
+  _PendingWrite({required this.key, required this.value, required this.type});
+}
+
+enum _WriteType { string, int, double, bool, stringList, remove }
+
+/// Minimum time between batched write flushes
+const _writeBatchDelayMs = 100;
 
 final _logger = Logger('PersistenceService');
 
@@ -96,9 +111,19 @@ final persistenceProvider = Provider<PersistenceService>((ref) {
 });
 
 /// This service abstracts the persistence layer.
+///
+/// Features:
+/// - Write batching: Multiple writes are collected and flushed together
+/// - Async writes: Non-blocking persistence operations
+/// - In-memory cache: Reduces redundant disk reads
 class PersistenceService {
   final SharedPreferences _prefs;
   final bool isFirstAppStart;
+
+  // Write batching
+  final List<_PendingWrite> _pendingWrites = [];
+  Timer? _flushTimer;
+  final Map<String, dynamic> _memoryCache = {};
 
   PersistenceService._(this._prefs, this.isFirstAppStart);
 
@@ -548,5 +573,107 @@ class PersistenceService {
 
   Future<void> clear() async {
     await _prefs.clear();
+  }
+
+  // ========== Write Batching Methods ==========
+
+  /// Queues a string write to be batched and flushed asynchronously.
+  void queueString(String key, String value) {
+    _queueWrite(_PendingWrite(key: key, value: value, type: _WriteType.string));
+  }
+
+  /// Queues an int write to be batched and flushed asynchronously.
+  void queueInt(String key, int value) {
+    _queueWrite(_PendingWrite(key: key, value: value, type: _WriteType.int));
+  }
+
+  /// Queues a double write to be batched and flushed asynchronously.
+  void queueDouble(String key, double value) {
+    _queueWrite(_PendingWrite(key: key, value: value, type: _WriteType.double));
+  }
+
+  /// Queues a bool write to be batched and flushed asynchronously.
+  void queueBool(String key, bool value) {
+    _queueWrite(_PendingWrite(key: key, value: value, type: _WriteType.bool));
+  }
+
+  /// Queues a string list write to be batched and flushed asynchronously.
+  void queueStringList(String key, List<String> value) {
+    _queueWrite(_PendingWrite(key: key, value: value, type: _WriteType.stringList));
+  }
+
+  /// Queues a key removal to be batched and flushed asynchronously.
+  void queueRemove(String key) {
+    _queueWrite(_PendingWrite(key: key, value: null, type: _WriteType.remove));
+  }
+
+  /// Internal method to queue a write operation.
+  void _queueWrite(_PendingWrite write) {
+    // Update memory cache immediately for consistent reads
+    if (write.type == _WriteType.remove) {
+      _memoryCache.remove(write.key);
+    } else {
+      _memoryCache[write.key] = write.value;
+    }
+
+    // Replace any pending write for the same key
+    _pendingWrites.removeWhere((w) => w.key == write.key);
+    _pendingWrites.add(write);
+
+    // Schedule flush if not already scheduled
+    if (_flushTimer?.isActive != true) {
+      _flushTimer = Timer(const Duration(milliseconds: _writeBatchDelayMs), _flushWrites);
+    }
+  }
+
+  /// Flushes all pending writes to disk.
+  Future<void> _flushWrites() async {
+    if (_pendingWrites.isEmpty) return;
+
+    // Copy pending writes and clear the queue
+    final writesToFlush = List<_PendingWrite>.from(_pendingWrites);
+    _pendingWrites.clear();
+
+    // Execute all writes
+    for (final write in writesToFlush) {
+      try {
+        switch (write.type) {
+          case _WriteType.string:
+            await _prefs.setString(write.key, write.value as String);
+          case _WriteType.int:
+            await _prefs.setInt(write.key, write.value as int);
+          case _WriteType.double:
+            await _prefs.setDouble(write.key, write.value as double);
+          case _WriteType.bool:
+            await _prefs.setBool(write.key, write.value as bool);
+          case _WriteType.stringList:
+            await _prefs.setStringList(write.key, write.value as List<String>);
+          case _WriteType.remove:
+            await _prefs.remove(write.key);
+        }
+      } catch (e) {
+        _logger.warning('Failed to write ${write.key}: $e');
+      }
+    }
+
+    _logger.fine('Flushed ${writesToFlush.length} pending writes');
+  }
+
+  /// Forces an immediate flush of all pending writes.
+  /// Call this before app shutdown or when consistency is critical.
+  Future<void> flush() async {
+    _flushTimer?.cancel();
+    await _flushWrites();
+  }
+
+  /// Gets a value from memory cache if available, otherwise from disk.
+  /// Use this for frequently accessed values to reduce disk reads.
+  T? getFromCache<T>(String key, T Function(String key) getter) {
+    if (_memoryCache.containsKey(key)) {
+      return _memoryCache[key] as T?;
+    }
+    final value = getter(key);
+    _memoryCache[key] = value;
+    return value;
   }
 }

@@ -114,6 +114,7 @@ class SendTab extends StatelessWidget {
                             height: defaultThumbnailSize,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
+                              cacheExtent: defaultThumbnailSize * 3, // Pre-load 3 items ahead/behind for smoother scrolling
                               itemCount: vm.selectedFiles.length,
                               itemBuilder: (context, index) {
                                 final file = vm.selectedFiles[index];

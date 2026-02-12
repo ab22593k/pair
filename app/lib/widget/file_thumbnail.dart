@@ -106,12 +106,15 @@ class FilePathThumbnail extends StatelessWidget {
     final Widget? thumbnail;
     if (path != null && fileType == FileType.image) {
       if (path!.startsWith('content://')) {
+        // Use const key for image cache to avoid redundant decoding
         thumbnail = Image(
+          key: ValueKey('content://$path'),
           image: ResizeImage.resizeIfNeeded(
             64,
             null,
             _ContentUriImage(Uri.parse(path!)),
           ),
+          gaplessPlayback: true, // Prevents flicker when image loads
           errorBuilder: (_, __, ___) => Padding(
             padding: const EdgeInsets.all(10),
             child: _fileTypeIcon(fileType, context),
@@ -120,7 +123,9 @@ class FilePathThumbnail extends StatelessWidget {
       } else {
         thumbnail = Image.file(
           File(path!),
+          key: ValueKey('file://$path'),
           cacheWidth: 64,
+          gaplessPlayback: true,
           errorBuilder: (_, __, ___) => Padding(
             padding: const EdgeInsets.all(10),
             child: _fileTypeIcon(fileType, context),
@@ -153,10 +158,15 @@ class MemoryThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget? thumbnail;
     if (bytes != null) {
+      // Use bytes hash as key for consistent caching
+      final cacheKey = bytes!.length > 100 ? bytes!.sublist(0, 100).hashCode : bytes!.hashCode;
+
       thumbnail = Padding(
         padding: fileType == FileType.apk ? const EdgeInsets.all(50) : EdgeInsets.zero,
         child: Image.memory(
           bytes!,
+          key: ValueKey('memory_$cacheKey'),
+          gaplessPlayback: true,
           errorBuilder: (_, __, ___) => Padding(
             padding: const EdgeInsets.all(10),
             child: _fileTypeIcon(fileType, context),
