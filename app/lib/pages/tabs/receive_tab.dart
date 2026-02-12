@@ -6,7 +6,6 @@ import 'package:localsend_app/pages/tabs/receive_tab_vm.dart';
 import 'package:localsend_app/util/ip_helper.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/widget/animations/initial_fade_transition.dart';
-import 'package:localsend_app/widget/column_list_view.dart';
 import 'package:localsend_app/widget/custom_icon_button.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:refena_flutter/refena_flutter.dart';
@@ -19,7 +18,6 @@ class _ExpressiveSpacing {
   static const double sm = 12;
   static const double md = 16;
   static const double lg = 24;
-  static const double xl = 32;
   static const double xxl = 48;
 }
 
@@ -38,27 +36,17 @@ class ReceiveTab extends StatelessWidget {
 
     return Stack(
       children: [
-        checkPlatform([TargetPlatform.macOS]) ? SizedBox(height: 50, child: MoveWindow()) : const SizedBox.shrink(),
-        Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: ResponsiveListView.defaultMaxWidth),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
-              child: ColumnListView(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: _ExpressiveSpacing.xxl),
-                  Expanded(
-                    child: _BeaconIdentity(vm: vm),
-                  ),
-                  const SizedBox(height: _ExpressiveSpacing.lg),
-                  _QuickSaveSection(vm: vm),
-                  const SizedBox(height: _ExpressiveSpacing.xl),
-                ],
-              ),
-            ),
-          ),
+        ResponsiveListView(
+          padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
+          children: [
+            const SizedBox(height: _ExpressiveSpacing.xxl),
+            _BeaconIdentity(vm: vm),
+            const SizedBox(height: _ExpressiveSpacing.lg),
+            _QuickSaveSection(vm: vm),
+            const SizedBox(height: _ExpressiveSpacing.xxl),
+          ],
         ),
+        if (checkPlatform([TargetPlatform.macOS])) SizedBox(height: 50, child: MoveWindow()),
         _InfoBox(vm),
         _CornerButtons(
           showAdvanced: vm.showAdvanced,
@@ -77,28 +65,59 @@ class _BeaconIdentity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isOnline = vm.serverState != null;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Expressive loading indicator with large contained style
-        InitialFadeTransition(
-          duration: const Duration(milliseconds: 600),
-          delay: const Duration(milliseconds: 200),
-          child: const MorphingLI.extraLarge(
-            containment: Containment.contained,
-          ),
+        // Illustrative Beacon identity
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Background expressive pulses
+            ...List.generate(3, (index) {
+              return Container(
+                    width: 140 + (index * 40.0),
+                    height: 140 + (index * 40.0),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: colorScheme.primary.withValues(alpha: 0.1 - (index * 0.03)),
+                        width: 2,
+                      ),
+                    ),
+                  )
+                  .animate(onPlay: (controller) => controller.repeat())
+                  .scale(
+                    duration: Duration(milliseconds: 2000 + (index * 500)),
+                    begin: const Offset(0.8, 0.8),
+                    end: const Offset(1.2, 1.2),
+                    curve: Curves.easeInOutCubic,
+                  )
+                  .fadeOut();
+            }),
+            // Expressive loading indicator
+            InitialFadeTransition(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 200),
+              child: const MorphingLI.extraLarge(
+                containment: Containment.contained,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: _ExpressiveSpacing.xl),
+        const SizedBox(height: _ExpressiveSpacing.xxl),
         // "Discoverable as" label for clarity
         InitialFadeTransition(
           duration: const Duration(milliseconds: 600),
-          delay: const Duration(milliseconds: 300),
+          delay: const Duration(milliseconds: 400),
           child: Text(
-            t.receiveTab.infoBox.alias.replaceAll(':', ''),
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-              fontWeight: FontWeight.w600,
-              letterSpacing: 2.0,
+            t.receiveTab.infoBox.alias.replaceAll(':', '').toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: colorScheme.primary.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w900,
+              letterSpacing: 3.0,
             ),
           ),
         ),
@@ -106,16 +125,16 @@ class _BeaconIdentity extends StatelessWidget {
         // Device alias with expressive typography
         InitialFadeTransition(
           duration: const Duration(milliseconds: 600),
-          delay: const Duration(milliseconds: 400),
+          delay: const Duration(milliseconds: 500),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               vm.serverState?.alias ?? vm.aliasSettings,
               style: GoogleFonts.plusJakartaSans(
-                textStyle: Theme.of(context).textTheme.displaySmall,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1.0,
-                color: Theme.of(context).colorScheme.onSurface,
+                textStyle: Theme.of(context).textTheme.displayMedium,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.5,
+                color: colorScheme.onSurface,
               ),
             ),
           ),
@@ -124,15 +143,22 @@ class _BeaconIdentity extends StatelessWidget {
         // Status/IP with secondary typography
         InitialFadeTransition(
           duration: const Duration(milliseconds: 600),
-          delay: const Duration(milliseconds: 600),
-          child: Text(
-            vm.serverState == null ? t.general.offline : vm.localIps.map((ip) => '#${ip.visualId}').toSet().join(' '),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w500,
+          delay: const Duration(milliseconds: 700),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.md, vertical: _ExpressiveSpacing.xs),
+            decoration: BoxDecoration(
+              color: isOnline ? colorScheme.primaryContainer.withValues(alpha: 0.3) : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              borderRadius: ShapeTokens.borderRadiusLarge,
             ),
-            textAlign: TextAlign.center,
+            child: Text(
+              isOnline ? vm.localIps.map((ip) => '#${ip.visualId}').toSet().join(' ') : t.general.offline,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: isOnline ? colorScheme.onPrimaryContainer : colorScheme.onSurfaceVariant,
+                letterSpacing: 1.0,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       ],

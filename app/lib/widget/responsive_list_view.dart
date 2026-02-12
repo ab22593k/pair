@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:localsend_app/util/ui/nav_bar_padding.dart';
 import 'package:localsend_app/widget/responsive_builder.dart';
+import 'package:rhizu/rhizu.dart';
 
 class ResponsiveListView extends StatelessWidget {
   static const defaultMaxWidth = 600.0;
@@ -37,6 +38,7 @@ class ResponsiveListView extends StatelessWidget {
     if (children != null) {
       return SingleChildScrollView(
         controller: controller,
+        physics: SmoothScrollPhysics(),
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxWidth),

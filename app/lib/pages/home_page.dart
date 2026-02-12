@@ -162,7 +162,6 @@ class _HomePageState extends State<HomePage> with Refena {
                     children: [
                       PageView(
                         controller: vm.controller,
-                        physics: const NeverScrollableScrollPhysics(),
                         children: const [
                           SafeArea(child: ReceiveTab()),
                           SafeArea(child: SendTab()),

@@ -3,8 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:localsend_app/config/theme.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/send_mode.dart';
 import 'package:localsend_app/pages/selected_files_page.dart';
@@ -28,7 +27,6 @@ import 'package:localsend_app/widget/dialogs/add_file_dialog.dart';
 import 'package:localsend_app/widget/dialogs/send_mode_help_dialog.dart';
 import 'package:localsend_app/widget/file_thumbnail.dart';
 import 'package:localsend_app/widget/list_tile/device_list_tile.dart';
-import 'package:localsend_app/widget/list_tile/device_placeholder_list_tile.dart';
 import 'package:localsend_app/widget/opacity_slideshow.dart';
 import 'package:localsend_app/widget/responsive_builder.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
@@ -71,15 +69,31 @@ class SendTab extends StatelessWidget {
               children: [
                 const SizedBox(height: _ExpressiveSpacing.xl),
                 if (vm.selectedFiles.isEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
-                    child: Text(
-                      t.sendTab.selection.title,
-                      style: GoogleFonts.plusJakartaSans(
-                        textStyle: Theme.of(context).textTheme.headlineSmall,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                        color: colorScheme.onSurface,
+                  InitialFadeTransition(
+                    duration: const Duration(milliseconds: 600),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t.sendTab.selection.title,
+                            style: GoogleFonts.plusJakartaSans(
+                              textStyle: Theme.of(context).textTheme.headlineSmall,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -1.0,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: _ExpressiveSpacing.xs),
+                          Text(
+                            t.sendTab.help,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -111,7 +125,7 @@ class SendTab extends StatelessWidget {
                       elevation: 0,
                       color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                       shape: const RoundedRectangleBorder(
-                        borderRadius: ShapeTokens.borderRadiusLarge,
+                        borderRadius: ShapeTokens.borderRadiusExtraLarge,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(_ExpressiveSpacing.lg),
@@ -129,8 +143,9 @@ class SendTab extends StatelessWidget {
                                 Text(
                                   t.sendTab.selection.title,
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w800,
                                     color: colorScheme.onSurface,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                                 const Spacer(),
@@ -149,14 +164,16 @@ class SendTab extends StatelessWidget {
                                     children: [
                                       Text(
                                         t.sendTab.selection.files(files: vm.selectedFiles.length),
-                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: -0.5,
                                         ),
                                       ),
                                       Text(
                                         vm.selectedFiles.fold(0, (prev, curr) => prev + curr.size).asReadableFileSize,
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                           color: colorScheme.onSurfaceVariant,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ],
@@ -166,10 +183,9 @@ class SendTab extends StatelessWidget {
                             ),
                             const SizedBox(height: _ExpressiveSpacing.lg),
                             SizedBox(
-                              height: defaultThumbnailSize + 10,
+                              height: defaultThumbnailSize + 16,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                physics: const BouncingScrollPhysics(),
                                 itemCount: vm.selectedFiles.length,
                                 itemBuilder: (context, index) {
                                   final file = vm.selectedFiles[index];
@@ -187,11 +203,12 @@ class SendTab extends StatelessWidget {
                                 TextButton(
                                   style: TextButton.styleFrom(
                                     foregroundColor: colorScheme.onSurface,
+                                    shape: const StadiumBorder(),
                                   ),
                                   onPressed: () async {
                                     await context.push(() => const SelectedFilesPage());
                                   },
-                                  child: Text(t.general.edit),
+                                  child: Text(t.general.edit, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                                 const SizedBox(width: _ExpressiveSpacing.md),
                                 ElevatedButton.icon(
@@ -200,6 +217,7 @@ class SendTab extends StatelessWidget {
                                     foregroundColor: colorScheme.onPrimary,
                                     elevation: 0,
                                     shape: const StadiumBorder(),
+                                    padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
                                   ),
                                   onPressed: () async {
                                     if (_options.length == 1) {
@@ -218,7 +236,7 @@ class SendTab extends StatelessWidget {
                                     );
                                   },
                                   icon: HugeIcon(icon: HugeIcons.strokeRoundedAdd01, color: colorScheme.onPrimary),
-                                  label: Text(t.general.add),
+                                  label: Text(t.general.add, style: const TextStyle(fontWeight: FontWeight.w900)),
                                 ),
                               ],
                             ),
@@ -238,8 +256,8 @@ class SendTab extends StatelessWidget {
                           t.sendTab.nearbyDevices,
                           style: GoogleFonts.plusJakartaSans(
                             textStyle: Theme.of(context).textTheme.titleLarge,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.2,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.8,
                             color: colorScheme.onSurface,
                           ),
                         ),
@@ -255,11 +273,29 @@ class SendTab extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
                     child: InitialFadeTransition(
-                      duration: const Duration(milliseconds: 400),
+                      duration: const Duration(milliseconds: 600),
                       delay: const Duration(milliseconds: 200),
-                      child: const Opacity(
-                        opacity: 0.3,
-                        child: DevicePlaceholderListTile(),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: _ExpressiveSpacing.xxl),
+                            const MorphingLI.large(
+                              containment: Containment.simple,
+                            ),
+                            const SizedBox(height: _ExpressiveSpacing.lg),
+                            Opacity(
+                              opacity: 0.5,
+                              child: Text(
+                                t.sendTab.nearbyDevices,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: _ExpressiveSpacing.xxl),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -298,9 +334,10 @@ class SendTab extends StatelessWidget {
                       await context.push(() => const TroubleshootPage());
                     },
                     icon: const HugeIcon(icon: HugeIcons.strokeRoundedSettings01, size: 16),
-                    label: Text(t.troubleshootPage.title),
+                    label: Text(t.troubleshootPage.title, style: const TextStyle(fontWeight: FontWeight.bold)),
                     style: TextButton.styleFrom(
                       foregroundColor: colorScheme.onSurfaceVariant,
+                      shape: const StadiumBorder(),
                     ),
                   ),
                 ),
@@ -316,13 +353,13 @@ class SendTab extends StatelessWidget {
                         children: [
                           Text(
                             t.sendTab.help,
-                            style: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                            style: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6), fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center,
                           ),
                           if (checkPlatformCanReceiveShareIntent())
                             Text(
                               t.sendTab.shareIntentInfo,
-                              style: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                              style: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6), fontWeight: FontWeight.w500),
                               textAlign: TextAlign.center,
                             ),
                         ],
@@ -350,7 +387,6 @@ class _ActionGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -358,14 +394,24 @@ class _ActionGroup extends StatelessWidget {
           message: t.sendTab.manualSending,
           child: CustomIconButton(
             onPressed: () async => vm.onTapAddress(context),
-            child: HugeIcon(icon: HugeIcons.strokeRoundedCursorPointer01, color: colorScheme.primary),
+            child: HugeIcon(
+              icon: HugeIcons.strokeRoundedNavigation03,
+              color: Theme.of(context).colorScheme.primary,
+              size: 20,
+            ),
           ),
         ),
         Tooltip(
           message: t.dialogs.favoriteDialog.title,
           child: CustomIconButton(
             onPressed: () async => await vm.onTapFavorite(context),
-            child: Icon(HugeIconsSolid.favouriteCircle, color: colorScheme.primary),
+            child: SvgPicture.asset(
+              'assets/icons/device-mobile-star.svg',
+              semanticsLabel: 'Favorite Device',
+              width: 20,
+              height: 20,
+              colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
+            ),
           ),
         ),
         _SendModeButton(
@@ -429,7 +475,6 @@ class _ScanButton extends StatelessWidget {
     final animations = context.ref.watch(animationProvider);
 
     final spinning = (scanningFavorites || scanningIps.isNotEmpty) && animations;
-    final iconColor = !animations && scanningIps.isNotEmpty ? Theme.of(context).colorScheme.warning : null;
 
     if (ips.length <= StartSmartScan.maxInterfaces) {
       return Tooltip(
@@ -443,7 +488,13 @@ class _ScanButton extends StatelessWidget {
               context.redux(nearbyDevicesProvider).dispatch(ClearFoundDevicesAction());
               await context.global.dispatchAsync(StartSmartScan(forceLegacy: true));
             },
-            child: Icon(HugeIconsSolid.refreshDot, color: iconColor),
+            child: SvgPicture.asset(
+              'assets/icons/Refresh03.svg',
+              semanticsLabel: 'Refresh 03',
+              width: 20,
+              height: 20,
+              colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
+            ),
           ),
         ),
       );
@@ -479,7 +530,13 @@ class _ScanButton extends StatelessWidget {
         reverse: true,
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: HugeIcon(icon: HugeIcons.strokeRoundedRefresh, color: iconColor),
+          child: SvgPicture.asset(
+            'assets/icons/Refresh03.svg',
+            semanticsLabel: 'Refresh 03',
+            width: 22,
+            height: 22,
+            colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
+          ),
         ),
       ),
     );
@@ -609,7 +666,11 @@ class _SendModeButton extends StatelessWidget {
       ],
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, color: Theme.of(context).iconTheme.color),
+        child: HugeIcon(
+          icon: HugeIcons.strokeRoundedMoreHorizontalCircle02,
+          color: Theme.of(context).colorScheme.primary,
+          size: 20,
+        ),
       ),
     );
   }
