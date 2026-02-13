@@ -31,9 +31,9 @@ class BigButton extends StatelessWidget {
           backgroundColor: filled ? colorScheme.primary : colorScheme.secondaryContainerIfDark,
           foregroundColor: filled ? colorScheme.onPrimary : colorScheme.onSecondaryContainerIfDark,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(16),
           ),
-          padding: EdgeInsets.only(left: 2, right: 2, top: 10 + desktopPaddingFix, bottom: 8 + desktopPaddingFix),
+          padding: EdgeInsets.only(left: 4, right: 4, top: 10 + desktopPaddingFix, bottom: 8 + desktopPaddingFix),
         ),
         onPressed: onTap,
         child: Column(

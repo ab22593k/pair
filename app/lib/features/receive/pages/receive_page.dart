@@ -5,7 +5,6 @@ import 'package:common/model/dto/file_dto.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/features/receive/pages/receive_options_page.dart';
 import 'package:localsend_app/features/settings/provider/settings_provider.dart';
@@ -22,6 +21,7 @@ import 'package:localsend_app/util/ui/snackbar.dart';
 import 'package:localsend_app/widget/device_bage.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:refena_flutter/refena_flutter.dart';
+import 'package:rhizu/rhizu.dart';
 import 'package:routerino/routerino.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -185,6 +185,9 @@ class _ReceivePageState extends State<ReceivePage> with Refena {
                                             height: 100,
                                             child: Card(
                                               child: SingleChildScrollView(
+                                                physics: SmoothScrollPhysics(
+                                                  parent: AlwaysScrollableScrollPhysics(),
+                                                ),
                                                 child: Padding(
                                                   padding: const EdgeInsets.all(10),
                                                   child: SelectableText(

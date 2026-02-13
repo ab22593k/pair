@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/features/receive/model/receive_history_entry.dart';
 import 'package:localsend_app/features/receive/pages/receive_page.dart';
@@ -22,6 +21,7 @@ import 'package:localsend_app/widget/file_thumbnail.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:path/path.dart' as path;
 import 'package:refena_flutter/refena_flutter.dart';
+import 'package:rhizu/rhizu.dart';
 import 'package:routerino/routerino.dart';
 
 enum _EntryOption {
@@ -71,6 +71,9 @@ class ReceiveHistoryPage extends StatelessWidget {
         children: [
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            physics: SmoothScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             child: Row(
               children: [
                 const SizedBox(width: 15),

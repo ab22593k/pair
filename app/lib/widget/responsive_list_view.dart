@@ -38,7 +38,9 @@ class ResponsiveListView extends StatelessWidget {
     if (children != null) {
       return SingleChildScrollView(
         controller: controller,
-        physics: SmoothScrollPhysics(),
+        physics: SmoothScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxWidth),

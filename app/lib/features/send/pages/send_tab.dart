@@ -185,6 +185,9 @@ class SendTab extends StatelessWidget {
                             SizedBox(
                               height: defaultThumbnailSize + 16,
                               child: ListView.builder(
+                                physics: SmoothScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics(),
+                                ),
                                 scrollDirection: Axis.horizontal,
                                 itemCount: vm.selectedFiles.length,
                                 itemBuilder: (context, index) {

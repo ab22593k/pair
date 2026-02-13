@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:localsend_app/util/native/platform_check.dart';
 
 class CustomIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -16,10 +15,9 @@ class CustomIconButton extends StatelessWidget {
     return TextButton(
       style: TextButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.onSurface,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        minimumSize: Size.zero,
+        minimumSize: const Size(48, 48),
         shape: const CircleBorder(),
-        padding: checkPlatformIsDesktop() ? const EdgeInsets.symmetric(horizontal: 8, vertical: 16) : const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
       ),
       onPressed: onPressed,
       child: child,

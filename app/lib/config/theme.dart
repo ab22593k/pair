@@ -6,10 +6,9 @@ import 'package:localsend_app/provider/device_info_provider.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/util/ui/dynamic_colors.dart';
 import 'package:refena_flutter/refena_flutter.dart';
-import 'package:rhizu/rhizu.dart';
 import 'package:yaru/yaru.dart' as yaru;
 
-final _borderRadius = ExpressiveRadius.medium;
+final _borderRadius = BorderRadius.circular(16);
 
 /// On desktop, we need to add additional padding to achieve the same visual appearance as on mobile
 double get desktopPaddingFix => checkPlatformIsDesktop() ? 8 : 0;
