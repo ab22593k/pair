@@ -18,6 +18,7 @@ analyzer:
     - lib/**.mapper.dart
     - lib/rust/**
     - submodules/**
+    - "build/**"
 
 formatter:
   trailing_commas: preserve

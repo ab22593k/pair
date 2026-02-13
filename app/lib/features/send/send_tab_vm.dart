@@ -2,9 +2,10 @@ import 'package:collection/collection.dart';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
+import 'package:localsend_app/features/send/controller/send_flow_controller.dart';
 import 'package:localsend_app/features/send/pages/send_page.dart';
 import 'package:localsend_app/features/send/provider/selected_sending_files_provider.dart';
-import 'package:localsend_app/features/send/provider/send_provider.dart';
+import 'package:localsend_app/features/send/provider/send_provider.dart'; // Keep this for watching state if needed
 import 'package:localsend_app/features/settings/provider/settings_provider.dart';
 import 'package:localsend_app/model/cross_file.dart';
 import 'package:localsend_app/model/persistence/favorite_device.dart';
@@ -77,7 +78,7 @@ final sendTabVmProvider = ViewProvider((ref) {
       );
       if (device != null && context.mounted) {
         await ref
-            .notifier(sendProvider)
+            .read(sendFlowControllerProvider)
             .startSession(
               target: device,
               files: files,
@@ -98,7 +99,7 @@ final sendTabVmProvider = ViewProvider((ref) {
         }
 
         await ref
-            .notifier(sendProvider)
+            .read(sendFlowControllerProvider)
             .startSession(
               target: device,
               files: files,
@@ -146,7 +147,7 @@ final sendTabVmProvider = ViewProvider((ref) {
       }
 
       await ref
-          .notifier(sendProvider)
+          .read(sendFlowControllerProvider)
           .startSession(
             target: device,
             files: selectedFiles,
@@ -184,7 +185,7 @@ final sendTabVmProvider = ViewProvider((ref) {
       }
 
       await ref
-          .notifier(sendProvider)
+          .read(sendFlowControllerProvider)
           .startSession(
             target: device,
             files: files,
