@@ -21,16 +21,13 @@ import 'package:localsend_app/util/file_size_helper.dart';
 import 'package:localsend_app/util/native/file_picker.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/widget/animations/initial_fade_transition.dart';
-import 'package:localsend_app/widget/big_button.dart';
 import 'package:localsend_app/widget/custom_icon_button.dart';
 import 'package:localsend_app/widget/dialogs/add_file_dialog.dart';
 import 'package:localsend_app/widget/dialogs/send_mode_help_dialog.dart';
 import 'package:localsend_app/widget/file_thumbnail.dart';
 import 'package:localsend_app/widget/list_tile/device_list_tile.dart';
 import 'package:localsend_app/widget/opacity_slideshow.dart';
-import 'package:localsend_app/widget/responsive_builder.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
-import 'package:localsend_app/widget/responsive_wrap_view.dart';
 import 'package:localsend_app/widget/rotating_widget.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:rhizu/rhizu.dart';
@@ -57,8 +54,6 @@ class SendTab extends StatelessWidget {
       provider: (ref) => sendTabVmProvider,
       init: (context) async => context.global.dispatchAsync(SendTabInitAction(context)), // ignore: discarded_futures
       builder: (context, vm) {
-        final sizingInformation = SizingInformation(MediaQuery.sizeOf(context).width);
-        final buttonWidth = sizingInformation.isDesktop ? BigButton.desktopWidth : BigButton.mobileWidth;
         final ref = context.ref;
         final colorScheme = Theme.of(context).colorScheme;
 
@@ -67,56 +62,8 @@ class SendTab extends StatelessWidget {
             ResponsiveListView(
               padding: EdgeInsets.zero,
               children: [
-                const SizedBox(height: _ExpressiveSpacing.xl),
                 if (vm.selectedFiles.isEmpty) ...[
-                  InitialFadeTransition(
-                    duration: const Duration(milliseconds: 600),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            t.sendTab.selection.title,
-                            style: GoogleFonts.plusJakartaSans(
-                              textStyle: Theme.of(context).textTheme.headlineSmall,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -1.0,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: _ExpressiveSpacing.xs),
-                          Text(
-                            t.sendTab.help,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: _ExpressiveSpacing.md),
-                  ResponsiveWrapView(
-                    outerHorizontalPadding: _ExpressiveSpacing.lg,
-                    outerVerticalPadding: _ExpressiveSpacing.sm,
-                    childPadding: _ExpressiveSpacing.md,
-                    minChildWidth: buttonWidth,
-                    children: _options.map((option) {
-                      return BigButton(
-                        icon: option.icon(context),
-                        label: option.label,
-                        filled: false,
-                        onTap: () async => ref.global.dispatchAsync(
-                          PickFileAction(
-                            option: option,
-                            context: context,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                  const SizedBox(height: _ExpressiveSpacing.sm),
                 ] else ...[
                   InitialFadeTransition(
                     duration: const Duration(milliseconds: 400),
@@ -128,7 +75,7 @@ class SendTab extends StatelessWidget {
                         borderRadius: ShapeTokens.borderRadiusExtraLarge,
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(_ExpressiveSpacing.lg),
+                        padding: const EdgeInsets.all(_ExpressiveSpacing.sm),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -139,7 +86,6 @@ class SendTab extends StatelessWidget {
                                   color: colorScheme.primary,
                                   size: 20,
                                 ),
-                                const SizedBox(width: _ExpressiveSpacing.sm),
                                 Text(
                                   t.sendTab.selection.title,
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -155,7 +101,6 @@ class SendTab extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: _ExpressiveSpacing.md),
                             Row(
                               children: [
                                 Expanded(
@@ -181,7 +126,6 @@ class SendTab extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: _ExpressiveSpacing.lg),
                             SizedBox(
                               height: defaultThumbnailSize + 16,
                               child: ListView.builder(
@@ -213,7 +157,6 @@ class SendTab extends StatelessWidget {
                                   },
                                   child: Text(t.general.edit, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 ),
-                                const SizedBox(width: _ExpressiveSpacing.md),
                                 ElevatedButton.icon(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: colorScheme.primary,
@@ -249,7 +192,6 @@ class SendTab extends StatelessWidget {
                     ),
                   ),
                 ],
-                const SizedBox(height: _ExpressiveSpacing.xl),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
                   child: Row(
@@ -271,7 +213,6 @@ class SendTab extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: _ExpressiveSpacing.md),
                 if (vm.nearbyDevices.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
@@ -281,7 +222,7 @@ class SendTab extends StatelessWidget {
                       child: Center(
                         child: Column(
                           children: [
-                            const SizedBox(height: _ExpressiveSpacing.xxl),
+                            const SizedBox(height: _ExpressiveSpacing.xl),
                             const MorphingLI.large(
                               containment: Containment.simple,
                             ),
@@ -375,6 +316,28 @@ class SendTab extends StatelessWidget {
             ),
             // make the top draggable on Desktop
             if (checkPlatform([TargetPlatform.macOS])) SizedBox(height: 50, child: MoveWindow()) else const SizedBox.shrink(),
+            // Expressive FAB Menu for file selection
+            if (vm.selectedFiles.isEmpty)
+              Positioned(
+                right: 24,
+                bottom: 24,
+                child: FabMenu(
+                  children: _options.map((option) {
+                    return FabMenuItem(
+                      label: option.label,
+                      icon: option.icon(context),
+                      onPressed: () async {
+                        await ref.global.dispatchAsync(
+                          PickFileAction(
+                            option: option,
+                            context: context,
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
           ],
         );
       },
@@ -398,9 +361,10 @@ class _ActionGroup extends StatelessWidget {
           child: CustomIconButton(
             onPressed: () async => vm.onTapAddress(context),
             child: HugeIcon(
-              icon: HugeIcons.strokeRoundedNavigation03,
+              icon: HugeIcons.strokeRoundedCursorAddSelection01,
               color: Theme.of(context).colorScheme.primary,
-              size: 20,
+              size: 19,
+              strokeWidth: 2.0,
             ),
           ),
         ),
@@ -444,7 +408,7 @@ class _CircularPopupButton<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(9999),
+      borderRadius: ExpressiveRadius.full,
       child: Material(
         type: MaterialType.transparency,
         child: DividerTheme(

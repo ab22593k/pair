@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:rhizu/rhizu.dart';
 import 'package:legalize/legalize.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -81,7 +82,7 @@ class _QuickActionsDialogState extends State<QuickActionsDialog> with Refena {
                 }
               });
             },
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: ExpressiveRadius.small,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             constraints: const BoxConstraints(minWidth: 0, minHeight: 0),
             children: _QuickAction.values.map((mode) {

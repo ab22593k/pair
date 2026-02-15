@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:common/util/network_interfaces.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SegmentedButton;
 import 'package:local_hero/local_hero.dart';
 import 'package:localsend_app/features/settings/provider/settings_provider.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -74,7 +74,7 @@ class _NetworkInterfacesPageState extends State<NetworkInterfacesPage> {
             Container(
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: ExpressiveRadius.large,
               ),
               padding: const EdgeInsets.all(16),
               child: ScrollConfiguration(
@@ -106,7 +106,7 @@ class _NetworkInterfacesPageState extends State<NetworkInterfacesPage> {
                           elevation: 0,
                           color: ignored ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5) : colorScheme.surfaceContainer,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: ExpressiveRadius.medium,
                             side: BorderSide(
                               color: ignored ? Colors.transparent : colorScheme.outlineVariant,
                             ),
@@ -122,7 +122,7 @@ class _NetworkInterfacesPageState extends State<NetworkInterfacesPage> {
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: ignored ? colorScheme.secondaryContainer.withValues(alpha: 0.5) : colorScheme.secondaryContainer,
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: ExpressiveRadius.small,
                                       ),
                                       child: Text(
                                         '#${i + 1}',
@@ -249,7 +249,7 @@ class _NetworkInterfacesPageState extends State<NetworkInterfacesPage> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: ExpressiveRadius.large,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

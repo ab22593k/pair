@@ -1,5 +1,5 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SegmentedButton;
 import 'package:localsend_app/features/receive/pages/receive_history_page.dart';
 import 'package:localsend_app/features/receive/receive_tab_vm.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -71,7 +71,6 @@ class _BeaconIdentity extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Illustrative Beacon identity
         Stack(
           alignment: Alignment.center,
           children: [
@@ -107,7 +106,6 @@ class _BeaconIdentity extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: _ExpressiveSpacing.xxl),
         // "Discoverable as" label for clarity
         InitialFadeTransition(
           duration: const Duration(milliseconds: 600),

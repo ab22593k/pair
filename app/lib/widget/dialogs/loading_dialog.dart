@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rhizu/rhizu.dart' hide CircularProgressIndicator;
 
 class LoadingDialog extends StatelessWidget {
   const LoadingDialog();
@@ -8,7 +9,7 @@ class LoadingDialog extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        shape: const RoundedRectangleBorder(borderRadius: ExpressiveRadius.extraLarge),
         child: const Padding(
           padding: EdgeInsets.all(24.0),
           child: Column(

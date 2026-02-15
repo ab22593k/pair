@@ -12,6 +12,7 @@ import 'package:localsend_app/widget/custom_basic_appbar.dart';
 import 'package:localsend_app/widget/dialogs/not_available_on_platform_dialog.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:refena_flutter/refena_flutter.dart';
+import 'package:rhizu/rhizu.dart';
 
 class TroubleshootPage extends StatelessWidget {
   const TroubleshootPage();
@@ -104,7 +105,7 @@ class _TroubleshootItemState extends State<_TroubleshootItem> {
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: ExpressiveRadius.large,
           side: BorderSide(color: colorScheme.outlineVariant),
         ),
         color: colorScheme.surfaceContainerLow,
@@ -144,7 +145,7 @@ class _TroubleshootItemState extends State<_TroubleshootItem> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: ExpressiveRadius.medium,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +196,7 @@ class _TroubleshootItemState extends State<_TroubleshootItem> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: ExpressiveRadius.small,
                     ),
                     child: SelectionArea(
                       child: Column(

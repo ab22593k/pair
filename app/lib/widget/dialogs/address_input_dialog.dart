@@ -5,6 +5,7 @@ import 'package:common/isolate.dart';
 import 'package:common/model/device.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:rhizu/rhizu.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/features/settings/provider/settings_provider.dart';
@@ -134,7 +135,7 @@ class _AddressInputDialogState extends State<AddressInputDialog> with Refena {
                 _mode = _InputMode.values[index];
               });
             },
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: ExpressiveRadius.small,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             constraints: const BoxConstraints(minWidth: 0, minHeight: 0),
             children: _InputMode.values.map((mode) {

@@ -1,6 +1,7 @@
 import 'package:common/model/file_type.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:flutter/material.dart';
+import 'package:rhizu/rhizu.dart' hide CircularProgressIndicator;
 import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/features/send/provider/selected_sending_files_provider.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -207,7 +208,7 @@ class _ApkPickerPageState extends State<ApkPickerPage> with Refena {
                         child: InkWell(
                           onTap: () async => (apkParams.selectMultipleApps) ? _appSelection(app) : _pickApp(app),
                           customBorder: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: ExpressiveRadius.small,
                           ),
                           child: Row(
                             children: [

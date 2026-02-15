@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:localsend_app/config/theme.dart';
+import 'package:rhizu/rhizu.dart';
 
 class CustomListTile extends StatelessWidget {
   final Widget? icon;
@@ -22,13 +23,13 @@ class CustomListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+      shape: const RoundedRectangleBorder(
+        borderRadius: ExpressiveRadius.large,
       ),
       color: Theme.of(context).colorScheme.secondaryContainerIfDark,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: ExpressiveRadius.large,
         child: Padding(
           padding: padding,
           child: Row(

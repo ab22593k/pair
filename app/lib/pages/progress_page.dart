@@ -18,6 +18,7 @@ import 'package:localsend_app/util/file_size_helper.dart';
 import 'package:localsend_app/util/file_speed_helper.dart';
 import 'package:localsend_app/util/native/open_file.dart';
 import 'package:localsend_app/util/native/open_folder.dart';
+import 'package:rhizu/rhizu.dart' hide LinearProgressIndicator;
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/util/native/taskbar_helper.dart';
 import 'package:localsend_app/util/ui/nav_bar_padding.dart';
@@ -241,6 +242,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
         body: Stack(
           children: [
             ListView.builder(
+              physics: const SmoothScrollPhysics(),
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 20,
                 bottom: 200 + getNavBarPadding(context), // Increased bottom padding for the floating card
@@ -313,7 +315,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                     child: Card(
                       color: Theme.of(context).colorScheme.errorContainer,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: ExpressiveRadius.medium),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: SelectableText(
@@ -453,9 +455,9 @@ class _FileListItem extends StatelessWidget {
       child: Card(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: ExpressiveRadius.medium),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: ExpressiveRadius.medium,
           onTap: filePath != null ? () async => openFile(context, file.fileType, filePath!) : null,
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -500,7 +502,7 @@ class _FileListItem extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: ExpressiveRadius.extraSmall,
                             child: LinearProgressIndicator(
                               value: progress,
                               minHeight: 8,
@@ -593,7 +595,7 @@ class _BottomProgressCard extends StatelessWidget {
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainer,
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: const RoundedRectangleBorder(borderRadius: ExpressiveRadius.large),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -641,7 +643,7 @@ class _BottomProgressCard extends StatelessWidget {
               curve: Curves.easeOut,
               builder: (context, value, child) {
                 return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: ExpressiveRadius.small,
                   child: LinearProgressIndicator(
                     value: value,
                     minHeight: 12,

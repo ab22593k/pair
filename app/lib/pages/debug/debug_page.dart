@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:rhizu/rhizu.dart';
 import 'package:localsend_app/pages/debug/discovery_debug_page.dart';
 import 'package:localsend_app/pages/debug/http_logs_page.dart';
 import 'package:localsend_app/pages/debug/security_debug_page.dart';
@@ -26,6 +27,7 @@ class DebugPage extends StatelessWidget {
     return Scaffold(
       appBar: basicLocalSendAppbar('Debugging'),
       body: ListView(
+        physics: const SmoothScrollPhysics(),
         padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 30),
         children: [
           DebugEntry(

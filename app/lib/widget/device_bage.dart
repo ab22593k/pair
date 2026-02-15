@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rhizu/rhizu.dart';
 
 class DeviceBadge extends StatelessWidget {
   final Color backgroundColor;
@@ -17,7 +18,7 @@ class DeviceBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: ExpressiveRadius.extraSmall,
       ),
       child: Text(label, style: TextStyle(color: foregroundColor)),
     );
