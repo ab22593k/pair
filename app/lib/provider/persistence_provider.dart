@@ -238,8 +238,25 @@ class PersistenceService {
   }
 
   StoredSecurityContext getSecurityContext() {
-    final contextRaw = _prefs.getString(_securityContext)!;
-    return StoredSecurityContext.fromJson(jsonDecode(contextRaw));
+    final contextRaw = _prefs.getString(_securityContext);
+    if (contextRaw == null) {
+      // Generate new security context if missing
+      _logger.warning('Security context not found, generating new one');
+      final newContext = generateSecurityContext();
+      // ignore: unawaited_futures
+      setSecurityContext(newContext);
+      return newContext;
+    }
+    try {
+      return StoredSecurityContext.fromJson(jsonDecode(contextRaw));
+    } catch (e) {
+      // Handle corrupted security context
+      _logger.warning('Failed to parse security context, generating new one', e);
+      final newContext = generateSecurityContext();
+      // ignore: unawaited_futures
+      setSecurityContext(newContext);
+      return newContext;
+    }
   }
 
   Future<void> setSecurityContext(StoredSecurityContext context) async {

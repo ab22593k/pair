@@ -85,6 +85,7 @@ class ServerService extends Notifier<ServerState?> {
   }
 
   /// Starts the server.
+  /// Tries the specified port first, then falls back to random ports if binding fails.
   Future<ServerState?> startServer({
     required String alias,
     required int port,
@@ -122,32 +123,74 @@ class ServerService extends Notifier<ServerState?> {
 
     _logger.info('Starting server...');
 
-    final HttpServer httpServer;
-    if (https) {
-      final securityContext = ref.read(securityProvider);
-      httpServer = await HttpServer.bindSecure(
-        '0.0.0.0',
-        port,
-        SecurityContext()
-          ..usePrivateKeyBytes(securityContext.privateKey.codeUnits)
-          ..useCertificateChainBytes(securityContext.certificate.codeUnits),
-      );
-      _logger.info('Server started. (Port: $port, HTTPS only)');
-    } else {
-      httpServer = await HttpServer.bind(
-        '0.0.0.0',
-        port,
-      );
-      _logger.info('Server started. (Port: $port, HTTP only)');
+    HttpServer httpServer;
+    int finalPort = port;
+    bool finalHttps = https;
+
+    Future<HttpServer> bindHttpServer(int bindPort, {bool useHttps = true}) async {
+      if (useHttps) {
+        final securityContext = ref.read(securityProvider);
+        return await HttpServer.bindSecure(
+          '0.0.0.0',
+          bindPort,
+          SecurityContext()
+            ..usePrivateKeyBytes(securityContext.privateKey.codeUnits)
+            ..useCertificateChainBytes(securityContext.certificate.codeUnits),
+        );
+      } else {
+        return await HttpServer.bind('0.0.0.0', bindPort);
+      }
+    }
+
+    try {
+      httpServer = await bindHttpServer(port, useHttps: https);
+      _logger.info('Server started. (Port: $port, ${https ? "HTTPS" : "HTTP"} only)');
+    } on SocketException catch (e) {
+      _logger.warning('Failed to bind to port $port: $e. Trying alternative ports...');
+      try {
+        httpServer = await bindHttpServer(0, useHttps: https);
+        finalPort = httpServer.port;
+        _logger.info('Server started on alternative port. (Port: $finalPort, ${https ? "HTTPS" : "HTTP"} only)');
+      } on SocketException catch (e2) {
+        // If HTTPS fails, try falling back to HTTP
+        if (https) {
+          _logger.warning('HTTPS binding failed, falling back to HTTP: $e2');
+          httpServer = await bindHttpServer(port, useHttps: false);
+          finalPort = httpServer.port;
+          finalHttps = false;
+          _logger.info('Server started in HTTP fallback mode. (Port: $finalPort, HTTP only)');
+        } else {
+          rethrow;
+        }
+      }
+    } on TlsException catch (e) {
+      // Handle TLS/SSL certificate errors
+      _logger.warning('TLS certificate error: $e. Falling back to HTTP...');
+      if (https) {
+        httpServer = await bindHttpServer(port, useHttps: false);
+        finalPort = httpServer.port;
+        finalHttps = false;
+        _logger.info('Server started in HTTP fallback mode. (Port: $finalPort, HTTP only)');
+      } else {
+        rethrow;
+      }
+    } catch (e) {
+      _logger.severe('Failed to start server: $e');
+      rethrow;
     }
 
     final server = SimpleServer.start(server: httpServer, routes: router);
 
+    // If we fell back to HTTP, log a warning
+    if (https && !finalHttps) {
+      _logger.warning('Server started in HTTP mode due to certificate/port issues. HTTPS is disabled.');
+    }
+
     final newServerState = ServerState(
       httpServer: server,
       alias: alias,
-      port: port,
-      https: https,
+      port: finalPort,
+      https: finalHttps,
       session: null,
       webSendState: null,
       pinAttempts: {},

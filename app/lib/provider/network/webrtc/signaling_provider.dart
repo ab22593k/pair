@@ -154,6 +154,17 @@ class _SetupSignalingConnection extends AsyncGlobalAction {
           case WsServerMessage_Error():
         }
       }
+    } catch (e) {
+      // Handle WebRTC signaling connection errors gracefully
+      // Catching all errors including AnyhowException from flutter_rust_bridge
+      final errorMessage = e.toString();
+      if (errorMessage.contains('400 Bad Request')) {
+        // Log user-friendly error message for signaling server errors
+        emitMessage('WebRTC signaling connection failed: Server returned 400 Bad Request. Internet discovery may not work.');
+      } else {
+        emitMessage('WebRTC signaling connection error: $errorMessage');
+      }
+      // Don't rethrow - we've handled it gracefully
     } finally {
       ref.redux(signalingProvider).dispatch(_RemoveConnectionAction(signalingServer: signalingServer));
     }

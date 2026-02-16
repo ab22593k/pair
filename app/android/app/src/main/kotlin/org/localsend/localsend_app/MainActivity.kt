@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
@@ -21,6 +23,7 @@ private const val REQUEST_CODE_PICK_FILE = 3
 
 class MainActivity : FlutterActivity() {
     private var pendingResult: MethodChannel.Result? = null
+    private var multicastLock: WifiManager.MulticastLock? = null
 
     // Overriding the static methods we need from the Java class, as described
     // in the documentation of `FlutterActivity.NewEngineIntentBuilder`
@@ -72,6 +75,20 @@ class MainActivity : FlutterActivity() {
                     result.success(isAnimationsEnabled())
                 }
 
+                "acquireMulticastLock" -> {
+                    val acquired = acquireMulticastLock()
+                    result.success(acquired)
+                }
+
+                "releaseMulticastLock" -> {
+                    releaseMulticastLock()
+                    result.success(null)
+                }
+
+                "checkLocationPermission" -> {
+                    result.success(checkLocationPermission())
+                }
+
                 else -> result.notImplemented()
             }
         }
@@ -80,6 +97,44 @@ class MainActivity : FlutterActivity() {
     private fun isAnimationsEnabled() : Boolean {
         return Settings.Global.getFloat(this.getContentResolver(),
             Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f) != 0.0f;
+    }
+
+    private fun acquireMulticastLock(): Boolean {
+        return try {
+            if (multicastLock == null) {
+                val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                multicastLock = wifiManager.createMulticastLock("LocalSendMulticastLock")
+                multicastLock?.setReferenceCounted(false)
+            }
+            multicastLock?.acquire()
+            android.util.Log.d("MainActivity", "MulticastLock acquired")
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Failed to acquire MulticastLock", e)
+            false
+        }
+    }
+
+    private fun releaseMulticastLock() {
+        try {
+            multicastLock?.let {
+                if (it.isHeld) {
+                    it.release()
+                    android.util.Log.d("MainActivity", "MulticastLock released")
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Failed to release MulticastLock", e)
+        }
+    }
+
+    private fun checkLocationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+            checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
     }
 
     private fun openDirectoryPicker(onlyPath: Boolean) {

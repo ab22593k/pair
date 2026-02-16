@@ -34,6 +34,7 @@ import 'package:localsend_app/provider/window_dimensions_provider.dart';
 import 'package:localsend_app/rust/api/logging.dart' as rust_logging;
 import 'package:localsend_app/rust/frb_generated.dart';
 import 'package:localsend_app/util/i18n.dart';
+import 'package:localsend_app/util/native/android_multicast_lock.dart';
 import 'package:localsend_app/util/native/autostart_helper.dart';
 import 'package:localsend_app/util/native/cache_helper.dart';
 import 'package:localsend_app/util/native/content_uri_helper.dart';
@@ -217,11 +218,17 @@ Future<void> postInit(BuildContext context, Ref ref, bool appStart) async {
     }
   }
 
-  try {
-    ref.redux(nearbyDevicesProvider).dispatchAsync(StartMulticastListener()); // ignore: unawaited_futures
-  } catch (e) {
-    _logger.warning('Starting multicast listener failed', e);
+  // Acquire multicast lock for Android before starting discovery
+  if (checkPlatform([TargetPlatform.android])) {
+    unawaited(AndroidMulticastLockService.acquire());
+
+    // Check location permission for Android 10+
+    unawaited(AndroidMulticastLockService.checkLocationPermission());
   }
+
+  // ignore: discarded_futures
+  ref.redux(nearbyDevicesProvider).dispatchAsync(StartMulticastListener());
+  _logger.info('Multicast listener started');
 
   ref.redux(signalingProvider).dispatch(SetupSignalingConnection());
 
