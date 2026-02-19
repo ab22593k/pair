@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:localsend_app/features/send/pages/selected_files_page.dart';
 import 'package:localsend_app/features/send/provider/selected_sending_files_provider.dart';
-import 'package:localsend_app/features/send/provider/send_provider.dart';
+import 'package:localsend_app/features/send/provider/send_session_service.dart';
 import 'package:localsend_app/features/send/send_tab_vm.dart';
 import 'package:localsend_app/features/settings/provider/settings_provider.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -52,7 +52,7 @@ class SendTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewModelBuilder(
       provider: (ref) => sendTabVmProvider,
-      init: (context) async => context.global.dispatchAsync(SendTabInitAction(context)), // ignore: discarded_futures
+      init: (context) async => context.global.dispatchAsync(SendTabInitAction()), // ignore: discarded_futures
       builder: (context, vm) {
         final ref = context.ref;
         final colorScheme = Theme.of(context).colorScheme;
@@ -67,28 +67,46 @@ class SendTab extends StatelessWidget {
                 ] else ...[
                   InitialFadeTransition(
                     duration: const Duration(milliseconds: 400),
-                    child: Card(
-                      margin: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
-                      elevation: 0,
-                      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: ShapeTokens.borderRadiusExtraLarge,
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 12.0),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.shadow.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(_ExpressiveSpacing.sm),
+                        padding: const EdgeInsets.all(_ExpressiveSpacing.md),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                HugeIcon(
-                                  icon: HugeIcons.strokeRoundedFiles02,
-                                  color: colorScheme.primary,
-                                  size: 20,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedFiles02,
+                                    color: colorScheme.onPrimaryContainer,
+                                    size: 24,
+                                  ),
                                 ),
+                                const SizedBox(width: _ExpressiveSpacing.md),
                                 Text(
                                   t.sendTab.selection.title,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.w800,
                                     color: colorScheme.onSurface,
                                     letterSpacing: -0.5,
@@ -101,6 +119,7 @@ class SendTab extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: _ExpressiveSpacing.md),
                             Row(
                               children: [
                                 Expanded(
@@ -147,22 +166,19 @@ class SendTab extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                TextButton(
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: colorScheme.onSurface,
-                                    shape: const StadiumBorder(),
+                                FilledButton.tonal(
+                                  style: FilledButton.styleFrom(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                   ),
                                   onPressed: () async {
                                     await context.push(() => const SelectedFilesPage());
                                   },
                                   child: Text(t.general.edit, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 ),
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: colorScheme.primary,
-                                    foregroundColor: colorScheme.onPrimary,
-                                    elevation: 0,
-                                    shape: const StadiumBorder(),
+                                const SizedBox(width: _ExpressiveSpacing.sm),
+                                FilledButton.icon(
+                                  style: FilledButton.styleFrom(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                     padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg),
                                   ),
                                   onPressed: () async {
@@ -181,8 +197,8 @@ class SendTab extends StatelessWidget {
                                       options: _options,
                                     );
                                   },
-                                  icon: HugeIcon(icon: HugeIcons.strokeRoundedAdd01, color: colorScheme.onPrimary),
-                                  label: Text(t.general.add, style: const TextStyle(fontWeight: FontWeight.w900)),
+                                  icon: HugeIcon(icon: HugeIcons.strokeRoundedAdd01, color: colorScheme.onPrimary, size: 20),
+                                  label: Text(t.general.add, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
@@ -200,9 +216,9 @@ class SendTab extends StatelessWidget {
                         child: Text(
                           t.sendTab.nearbyDevices,
                           style: GoogleFonts.plusJakartaSans(
-                            textStyle: Theme.of(context).textTheme.titleLarge,
+                            textStyle: Theme.of(context).textTheme.headlineSmall,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: -0.8,
+                            letterSpacing: -0.5,
                             color: colorScheme.onSurface,
                           ),
                         ),
@@ -222,19 +238,13 @@ class SendTab extends StatelessWidget {
                       child: Center(
                         child: Column(
                           children: [
-                            const SizedBox(height: _ExpressiveSpacing.xl),
-                            const MorphingLI.large(
-                              containment: Containment.simple,
-                            ),
                             const SizedBox(height: _ExpressiveSpacing.lg),
-                            Opacity(
-                              opacity: 0.5,
-                              child: Text(
-                                t.sendTab.nearbyDevices,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.2,
-                                ),
+                            Text(
+                              t.sendTab.nearbyDevices,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
                               ),
                             ),
                             const SizedBox(height: _ExpressiveSpacing.xxl),
@@ -247,7 +257,7 @@ class SendTab extends StatelessWidget {
                   final (index, device) = record;
                   final favoriteEntry = vm.favoriteDevices.findDevice(device);
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: _ExpressiveSpacing.sm, left: _ExpressiveSpacing.lg, right: _ExpressiveSpacing.lg),
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
                     child: InitialFadeTransition(
                       duration: const Duration(milliseconds: 400),
                       delay: Duration(milliseconds: 100 * (index + 1)),
@@ -273,15 +283,17 @@ class SendTab extends StatelessWidget {
                 }),
                 const SizedBox(height: _ExpressiveSpacing.lg),
                 Center(
-                  child: TextButton.icon(
+                  child: FilledButton.tonalIcon(
                     onPressed: () async {
                       await context.push(() => const TroubleshootPage());
                     },
-                    icon: const HugeIcon(icon: HugeIcons.strokeRoundedSettings01, size: 16),
-                    label: Text(t.troubleshootPage.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    style: TextButton.styleFrom(
+                    icon: const HugeIcon(icon: HugeIcons.strokeRoundedSettings01, size: 18),
+                    label: Text(t.troubleshootPage.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colorScheme.surfaceContainerHigh,
                       foregroundColor: colorScheme.onSurfaceVariant,
-                      shape: const StadiumBorder(),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
                 ),
@@ -353,31 +365,32 @@ class _ActionGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    final colorScheme = Theme.of(context).colorScheme;
+    return Toolbar(
+      padding: const EdgeInsets.all(4.0),
+      backgroundColor: colorScheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(16),
       children: [
         Tooltip(
           message: t.sendTab.manualSending,
-          child: CustomIconButton(
+          child: IconButton(
             onPressed: () async => vm.onTapAddress(context),
-            child: HugeIcon(
+            icon: const HugeIcon(
               icon: HugeIcons.strokeRoundedCursorAddSelection01,
-              color: Theme.of(context).colorScheme.primary,
-              size: 19,
-              strokeWidth: 2.0,
+              size: 20,
             ),
           ),
         ),
         Tooltip(
           message: t.dialogs.favoriteDialog.title,
-          child: CustomIconButton(
+          child: IconButton(
             onPressed: () async => await vm.onTapFavorite(context),
-            child: SvgPicture.asset(
+            icon: SvgPicture.asset(
               'assets/icons/device-mobile-star.svg',
               semanticsLabel: 'Favorite Device',
               width: 20,
               height: 20,
-              colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
+              colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn),
             ),
           ),
         ),
@@ -407,21 +420,20 @@ class _CircularPopupButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: ExpressiveRadius.full,
-      child: Material(
-        type: MaterialType.transparency,
-        child: DividerTheme(
-          data: DividerThemeData(
-            color: Theme.of(context).brightness == Brightness.light ? Colors.teal.shade100 : Colors.grey.shade700,
-          ),
-          child: PopupMenuButton(
-            offset: const Offset(0, 40),
-            onSelected: onSelected,
-            tooltip: tooltip,
-            itemBuilder: itemBuilder,
-            child: child,
-          ),
+    return Material(
+      type: MaterialType.transparency,
+      child: DividerTheme(
+        data: DividerThemeData(
+          color: Theme.of(context).brightness == Brightness.light ? Colors.teal.shade100 : Colors.grey.shade700,
+        ),
+        child: PopupMenuButton(
+          offset: const Offset(0, 50),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 8,
+          onSelected: onSelected,
+          tooltip: tooltip,
+          itemBuilder: itemBuilder,
+          child: child,
         ),
       ),
     );
@@ -450,17 +462,18 @@ class _ScanButton extends StatelessWidget {
           duration: const Duration(seconds: 2),
           spinning: spinning,
           reverse: true,
-          child: CustomIconButton(
+          child: IconButton.filledTonal(
+            style: IconButton.styleFrom(),
             onPressed: () async {
               context.redux(nearbyDevicesProvider).dispatch(ClearFoundDevicesAction());
               await context.global.dispatchAsync(StartSmartScan(forceLegacy: true));
             },
-            child: SvgPicture.asset(
+            icon: SvgPicture.asset(
               'assets/icons/Refresh03.svg',
               semanticsLabel: 'Refresh 03',
               width: 20,
               height: 20,
-              colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
+              colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.onPrimaryContainer, BlendMode.srcIn),
             ),
           ),
         ),
@@ -495,14 +508,18 @@ class _ScanButton extends StatelessWidget {
         duration: const Duration(seconds: 2),
         spinning: spinning,
         reverse: true,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: SvgPicture.asset(
             'assets/icons/Refresh03.svg',
             semanticsLabel: 'Refresh 03',
-            width: 22,
-            height: 22,
-            colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
+            width: 20,
+            height: 20,
+            colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.onPrimaryContainer, BlendMode.srcIn),
           ),
         ),
       ),
@@ -631,11 +648,10 @@ class _SendModeButton extends StatelessWidget {
           ),
         ),
       ],
-      child: Padding(
-        padding: const EdgeInsets.all(8),
+      child: const Padding(
+        padding: EdgeInsets.all(8.0),
         child: HugeIcon(
           icon: HugeIcons.strokeRoundedMoreHorizontalCircle02,
-          color: Theme.of(context).colorScheme.primary,
           size: 20,
         ),
       ),

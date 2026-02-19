@@ -17,6 +17,7 @@ class AddFileDialog extends StatelessWidget {
       await showDialog(
         context: context,
         builder: (_) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Text(t.dialogs.addFile.title),
           content: ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 300),

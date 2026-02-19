@@ -21,7 +21,7 @@ import 'package:localsend_app/features/receive/pages/receive_page.dart';
 import 'package:localsend_app/features/receive/provider/receive_history_provider.dart';
 import 'package:localsend_app/features/send/model/send_session_state.dart';
 import 'package:localsend_app/features/send/provider/selected_sending_files_provider.dart';
-import 'package:localsend_app/features/send/provider/send_provider.dart';
+import 'package:localsend_app/features/send/provider/send_session_service.dart';
 import 'package:localsend_app/features/settings/provider/settings_provider.dart';
 import 'package:localsend_app/model/state/server/receive_session_state.dart';
 import 'package:localsend_app/model/state/server/receiving_file.dart';

@@ -12,7 +12,16 @@ class FileInfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(t.dialogs.fileInfo.title),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+      ),
+      title: Text(
+        t.dialogs.fileInfo.title,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+      ),
       content: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: SingleChildScrollView(
@@ -77,9 +86,13 @@ class FileInfoDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
+        FilledButton.tonal(
+          style: FilledButton.styleFrom(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
           onPressed: () => context.pop(),
-          child: Text(t.general.close),
+          child: Text(t.general.close, style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
       ],
     );

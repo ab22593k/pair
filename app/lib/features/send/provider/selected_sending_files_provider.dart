@@ -64,7 +64,7 @@ class AddMessageAction extends ReduxAction<SelectedSendingFilesNotifier, List<Cr
   }
 }
 
-/// Updates a message.
+/// Updates a message at [index] with a new [message].
 class UpdateMessageAction extends ReduxAction<SelectedSendingFilesNotifier, List<CrossFile>> {
   final String message;
   final int index;
@@ -76,9 +76,24 @@ class UpdateMessageAction extends ReduxAction<SelectedSendingFilesNotifier, List
 
   @override
   List<CrossFile> reduce() {
-    dispatch(RemoveSelectedFileAction(index));
-    dispatch(AddMessageAction(message: message, index: index));
-    return state;
+    // Preserve the original UUID-based file name so the file identity is stable.
+    final originalName = state[index].name;
+    final bytes = utf8.encode(message);
+    final updated = CrossFile(
+      name: originalName,
+      fileType: FileType.text,
+      size: bytes.length,
+      thumbnail: null,
+      asset: null,
+      path: null,
+      bytes: bytes,
+      lastModified: null,
+      lastAccessed: null,
+    );
+
+    return List.unmodifiable(
+      [...state]..[index] = updated,
+    );
   }
 }
 

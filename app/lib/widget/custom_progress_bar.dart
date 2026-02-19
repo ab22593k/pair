@@ -14,7 +14,8 @@ class CustomProgressBar extends StatelessWidget {
       child: LinearProgressIndicator(
         value: progress,
         color: color ?? Theme.of(context).colorScheme.primary,
-        minHeight: 10,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        minHeight: 4,
       ),
     );
   }

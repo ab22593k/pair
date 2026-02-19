@@ -8,7 +8,7 @@ import 'package:common/model/session_status.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:localsend_app/features/send/provider/send_provider.dart';
+import 'package:localsend_app/features/send/provider/send_session_service.dart';
 import 'package:localsend_app/features/settings/provider/settings_provider.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/state/server/receive_session_state.dart';

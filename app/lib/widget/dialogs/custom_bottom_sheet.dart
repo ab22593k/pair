@@ -16,8 +16,8 @@ class CustomBottomSheet extends StatelessWidget {
     return RouterinoBottomSheet(
       title: title,
       description: description,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      borderRadius: 20,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      borderRadius: 24,
       child: child,
     );
   }

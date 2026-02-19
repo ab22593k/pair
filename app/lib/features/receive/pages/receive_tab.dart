@@ -1,12 +1,11 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:flutter/material.dart' hide SegmentedButton;
+import 'package:flutter/material.dart';
 import 'package:localsend_app/features/receive/pages/receive_history_page.dart';
 import 'package:localsend_app/features/receive/receive_tab_vm.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/util/ip_helper.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/widget/animations/initial_fade_transition.dart';
-import 'package:localsend_app/widget/custom_icon_button.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:rhizu/rhizu.dart';
@@ -171,36 +170,51 @@ class _QuickSaveSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
-      child: Card(
-        elevation: 0,
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        shape: const RoundedRectangleBorder(
-          borderRadius: ShapeTokens.borderRadiusExtraLarge,
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: _ExpressiveSpacing.lg,
-            vertical: _ExpressiveSpacing.md,
-          ),
+          padding: const EdgeInsets.all(_ExpressiveSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  HugeIcon(
-                    icon: HugeIcons.strokeRoundedSettings01,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 16,
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedSettings01,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 24,
+                    ),
                   ),
-                  const SizedBox(width: _ExpressiveSpacing.sm),
+                  const SizedBox(width: _ExpressiveSpacing.md),
                   Text(
                     t.general.quickSave,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
                     ),
                   ),
                 ],
@@ -280,17 +294,28 @@ class _CornerButtons extends StatelessWidget {
               AnimatedOpacity(
                 opacity: showHistoryButton ? 1 : 0,
                 duration: const Duration(milliseconds: 200),
-                child: CustomIconButton(
+                child: IconButton.filledTonal(
+                  style: IconButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.all(12),
+                  ),
                   onPressed: () async {
                     await context.push(() => const ReceiveHistoryPage());
                   },
-                  child: HugeIcon(icon: HugeIcons.strokeRoundedClock01, color: Theme.of(context).iconTheme.color),
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedClock01, color: Theme.of(context).iconTheme.color, size: 24),
                 ),
               ),
-            CustomIconButton(
+            const SizedBox(width: _ExpressiveSpacing.sm),
+            IconButton.filledTonal(
               key: const ValueKey('info-btn'),
+              style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.all(12),
+              ),
               onPressed: toggleAdvanced,
-              child: HugeIcon(icon: HugeIcons.strokeRoundedInformationCircle, color: Theme.of(context).iconTheme.color),
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedInformationCircle, color: Theme.of(context).iconTheme.color, size: 24),
             ),
           ],
         ),
@@ -316,60 +341,77 @@ class _InfoBox extends StatelessWidget {
         alignment: Alignment.topRight,
         child: Padding(
           padding: const EdgeInsets.all(_ExpressiveSpacing.lg),
-          child: Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: ExpressiveRadius.large,
-            ),
-            child: Container(
-              width: 280,
-              padding: const EdgeInsets.all(_ExpressiveSpacing.lg),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header with icon
-                  Row(
-                    children: [
-                      HugeIcon(
-                        icon: HugeIcons.strokeRoundedInformationCircle,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: _ExpressiveSpacing.sm),
-                      Text(
-                        t.receiveTab.infoBox.alias.replaceAll(':', ''),
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: _ExpressiveSpacing.md),
-                  Divider(
-                    height: 1,
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: _ExpressiveSpacing.md),
-                  // Info rows with expressive layout
-                  _InfoRow(
-                    label: t.receiveTab.infoBox.alias,
-                    value: vm.serverState?.alias ?? '-',
-                  ),
-                  const SizedBox(height: _ExpressiveSpacing.sm),
-                  _InfoRow(
-                    label: t.receiveTab.infoBox.ip,
-                    value: vm.localIps.isEmpty ? t.general.unknown : vm.localIps.join('\n'),
-                    isMultiline: vm.localIps.length > 1,
-                  ),
-                  const SizedBox(height: _ExpressiveSpacing.sm),
-                  _InfoRow(
-                    label: t.receiveTab.infoBox.port,
-                    value: vm.serverState?.port.toString() ?? '-',
-                  ),
-                ],
+          child: Container(
+            width: 300,
+            padding: const EdgeInsets.all(_ExpressiveSpacing.lg),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                width: 1,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with icon
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: HugeIcon(
+                        icon: HugeIcons.strokeRoundedInformationCircle,
+                        color: colorScheme.onPrimaryContainer,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: _ExpressiveSpacing.md),
+                    Text(
+                      t.receiveTab.infoBox.alias.replaceAll(':', ''),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: _ExpressiveSpacing.md),
+                Divider(
+                  height: 1,
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+                const SizedBox(height: _ExpressiveSpacing.md),
+                // Info rows with expressive layout
+                _InfoRow(
+                  label: t.receiveTab.infoBox.alias,
+                  value: vm.serverState?.alias ?? '-',
+                ),
+                const SizedBox(height: _ExpressiveSpacing.sm),
+                _InfoRow(
+                  label: t.receiveTab.infoBox.ip,
+                  value: vm.localIps.isEmpty ? t.general.unknown : vm.localIps.join('\n'),
+                  isMultiline: vm.localIps.length > 1,
+                ),
+                const SizedBox(height: _ExpressiveSpacing.sm),
+                _InfoRow(
+                  label: t.receiveTab.infoBox.port,
+                  value: vm.serverState?.port.toString() ?? '-',
+                ),
+              ],
             ),
           ),
         ),
@@ -398,14 +440,20 @@ class _InfoRow extends StatelessWidget {
       crossAxisAlignment: isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
         // Label with primary color for visual hierarchy
-        SizedBox(
-          width: 50,
+        Container(
+          width: 80,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colorScheme.primary,
-              fontWeight: FontWeight.w500,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: colorScheme.onSecondaryContainer,
+              fontWeight: FontWeight.w700,
             ),
+            textAlign: TextAlign.center,
           ),
         ),
         const SizedBox(width: _ExpressiveSpacing.md),

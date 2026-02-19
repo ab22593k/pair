@@ -79,7 +79,7 @@ class SendFlowController {
     } while (invalidPin);
 
     await result.when(
-      success: (sessionId, files) async {
+      success: (remoteSessionId, files) async {
         final sessionState = ref.read(sendProvider)[sessionId];
         if (sessionState?.background == false) {
           final background = ref.read(settingsProvider).sendMode == SendMode.multiple;

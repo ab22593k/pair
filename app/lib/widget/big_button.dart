@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/widget/responsive_builder.dart';
-import 'package:rhizu/rhizu.dart';
 
 class BigButton extends StatelessWidget {
   static const double desktopWidth = 100.0;
@@ -29,10 +28,10 @@ class BigButton extends StatelessWidget {
       height: 65.0,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: filled ? colorScheme.primary : colorScheme.secondaryContainerIfDark,
-          foregroundColor: filled ? colorScheme.onPrimary : colorScheme.onSecondaryContainerIfDark,
-          shape: const RoundedRectangleBorder(
-            borderRadius: ExpressiveRadius.large,
+          backgroundColor: filled ? colorScheme.primary : colorScheme.surfaceContainerHigh,
+          foregroundColor: filled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
           padding: EdgeInsets.only(left: 4, right: 4, top: 10 + desktopPaddingFix, bottom: 8 + desktopPaddingFix),
         ),

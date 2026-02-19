@@ -29,7 +29,6 @@ class DeviceListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final badgeColor = Color.lerp(Theme.of(context).colorScheme.secondaryContainer, Colors.white, 0.3)!;
     return CustomListTile(
       icon: device.deviceType.icon(context),
       title: Text(nameOverride ?? device.alias, style: const TextStyle(fontSize: 20)),
@@ -42,33 +41,33 @@ class DeviceListTile extends StatelessWidget {
             )
           : null,
       subTitle: Wrap(
-        runSpacing: 10,
-        spacing: 10,
+        runSpacing: 8,
+        spacing: 8,
         children: [
           if (info != null)
-            Text(info!, style: const TextStyle(color: Colors.grey))
+            Text(info!, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))
           else if (progress != null)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5),
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: CustomProgressBar(progress: progress!),
             )
           else ...[
             if (device.ip != null)
               DeviceBadge(
-                backgroundColor: badgeColor,
+                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
                 foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
                 label: 'LAN • HTTP',
               )
             else
               DeviceBadge(
-                backgroundColor: badgeColor,
-                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
                 label: 'WebRTC',
               ),
             if (device.deviceModel != null)
               DeviceBadge(
-                backgroundColor: badgeColor,
-                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
                 label: device.deviceModel!,
               ),
           ],

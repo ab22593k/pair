@@ -5,7 +5,7 @@ import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
-import 'package:localsend_app/features/send/provider/send_provider.dart';
+import 'package:localsend_app/features/send/provider/send_session_service.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/device_info_provider.dart';
 import 'package:localsend_app/provider/favorites_provider.dart';
@@ -124,6 +124,7 @@ class _SendPageState extends State<SendPage> with Refena {
                       children: [
                         Expanded(
                           child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               InitialSlideTransition(
                                 origin: const Offset(0, -1),

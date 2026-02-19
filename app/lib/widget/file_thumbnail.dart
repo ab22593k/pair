@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:localsend_app/model/cross_file.dart';
-import 'package:rhizu/rhizu.dart';
 import 'package:uri_content/uri_content.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
@@ -203,9 +202,9 @@ class _Thumbnail extends StatelessWidget {
       width: size,
       height: size,
       child: ClipRRect(
-        borderRadius: ExpressiveRadius.large,
+        borderRadius: BorderRadius.circular(16),
         child: ColoredBox(
-          color: Theme.of(context).inputDecorationTheme.fillColor!,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           child: thumbnail == null
               ? Center(child: icon)
               : FittedBox(

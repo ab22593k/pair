@@ -6,7 +6,6 @@ import 'package:common/constants.dart';
 import 'package:common/model/device.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/features/settings/pages/network_interfaces_page.dart';
 import 'package:localsend_app/features/settings/provider/settings_provider.dart';
@@ -68,7 +67,7 @@ class SettingsTab extends StatelessWidget {
               child: ResponsiveListView(
                 padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg, vertical: _ExpressiveSpacing.xxl),
                 children: [
-                  SizedBox(height: _ExpressiveSpacing.xl + MediaQuery.of(context).padding.top),
+                  SizedBox(height: _ExpressiveSpacing.xxl + MediaQuery.of(context).padding.top),
                   InitialFadeTransition(
                     duration: const Duration(milliseconds: 400),
                     delay: const Duration(milliseconds: 100),
@@ -331,39 +330,17 @@ class SettingsTab extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                if (vm.serverState == null)
-                                  Tooltip(
-                                    message: t.general.start,
-                                    child: TextButton(
-                                      style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface),
-                                      onPressed: () => vm.onTapStartServer(context),
-                                      child: HugeIcon(icon: HugeIcons.strokeRoundedPlay, color: Theme.of(context).iconTheme.color),
-                                    ),
-                                  )
-                                else
-                                  Tooltip(
-                                    message: t.general.restart,
-                                    child: IconButton(
-                                      iconSize: 16.0,
-                                      splashColor: Colors.transparent,
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Theme.of(context).colorScheme.onSurface,
-                                        elevation: 0.0,
-                                      ),
-                                      onPressed: () => vm.onTapRestartServer(context),
-                                      icon: Icon(HugeIconsSolid.refreshDot, color: Theme.of(context).iconTheme.color),
-                                    ),
-                                  ),
                                 Tooltip(
-                                  message: t.general.stop,
-                                  child: IconButton(
-                                    iconSize: 16.0,
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Theme.of(context).colorScheme.onSurface,
-                                      elevation: 0.0,
+                                  message: vm.serverState == null ? t.general.start : t.general.stop,
+                                  child: GestureDetector(
+                                    onTap: vm.serverState == null ? () => vm.onTapStartServer(context) : vm.onTapStopServer,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: HugeIcon(
+                                        icon: HugeIcons.strokeRoundedServerStack02,
+                                        color: vm.serverState == null ? Theme.of(context).colorScheme.error : Theme.of(context).iconTheme.color,
+                                      ),
                                     ),
-                                    onPressed: vm.serverState == null ? null : vm.onTapStopServer,
-                                    icon: Icon(HugeIconsSolid.stopCircle, color: Theme.of(context).iconTheme.color),
                                   ),
                                 ),
                               ],
@@ -640,24 +617,25 @@ class SettingsTab extends StatelessWidget {
             ),
             // a pseudo appbar that is draggable for the settings page
             SizedBox(
-              height: 50 + MediaQuery.of(context).padding.top,
+              height: 80 + MediaQuery.of(context).padding.top,
               child: ClipRRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(
-                    sigmaX: 20.0,
-                    sigmaY: 20.0,
+                    sigmaX: 30.0,
+                    sigmaY: 30.0,
                   ),
                   child: MoveWindow(
                     child: SafeArea(
                       child: Container(
                         alignment: Alignment.center,
+                        padding: const EdgeInsets.only(top: 16),
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8),
                           child: Text(
                             t.settingsTab.title,
                             style: GoogleFonts.plusJakartaSans(
-                              textStyle: Theme.of(context).textTheme.titleLarge,
-                              fontWeight: FontWeight.w800,
+                              textStyle: Theme.of(context).textTheme.headlineSmall,
+                              fontWeight: FontWeight.w900,
                               letterSpacing: -0.5,
                             ),
                             textAlign: TextAlign.center,
@@ -685,21 +663,24 @@ class _SettingsEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: _ExpressiveSpacing.md),
+      padding: const EdgeInsets.only(bottom: _ExpressiveSpacing.lg),
       child: Row(
         children: [
           Expanded(
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
           const SizedBox(width: _ExpressiveSpacing.md),
           SizedBox(
-            width: 150,
-            child: child,
+            width: 160,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: child,
+            ),
           ),
         ],
       ),
@@ -724,29 +705,13 @@ class _BooleanEntry extends StatelessWidget {
     final theme = Theme.of(context);
     return _SettingsEntry(
       label: label,
-      child: Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            height: 48,
-            decoration: BoxDecoration(
-              color: theme.inputDecorationTheme.fillColor,
-              borderRadius: ShapeTokens.borderRadiusMedium,
-            ),
-          ),
-          Positioned.fill(
-            child: Center(
-              child: Switch(
-                value: value,
-                onChanged: onChanged,
-                activeTrackColor: theme.colorScheme.primary,
-                activeThumbColor: theme.colorScheme.onPrimary,
-                inactiveThumbColor: theme.colorScheme.outline,
-                inactiveTrackColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              ),
-            ),
-          ),
-        ],
+      child: Switch(
+        value: value,
+        onChanged: onChanged,
+        activeTrackColor: theme.colorScheme.primary,
+        activeThumbColor: theme.colorScheme.onPrimary,
+        inactiveThumbColor: theme.colorScheme.outline,
+        inactiveTrackColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
       ),
     );
   }
@@ -768,23 +733,18 @@ class _ButtonEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     return _SettingsEntry(
       label: label,
-      child: TextButton(
-        style: TextButton.styleFrom(
-          backgroundColor: Theme.of(context).inputDecorationTheme.fillColor,
-          shape: const RoundedRectangleBorder(borderRadius: ShapeTokens.borderRadiusMedium),
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
-          padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.md),
+      child: FilledButton.tonal(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.md, vertical: 12),
         ),
         onPressed: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: _ExpressiveSpacing.xs),
-          child: Text(
-            buttonLabel,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
+        child: Text(
+          buttonLabel,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
@@ -801,7 +761,7 @@ class _SettingsSection extends StatelessWidget {
     required this.title,
     required this.sectionIcon,
     required this.children,
-    this.padding = const EdgeInsets.only(bottom: _ExpressiveSpacing.lg),
+    this.padding = const EdgeInsets.only(bottom: _ExpressiveSpacing.xl),
   });
 
   @override
@@ -809,11 +769,21 @@ class _SettingsSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: padding,
-      child: Card(
-        elevation: 0,
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-        shape: const RoundedRectangleBorder(
-          borderRadius: ShapeTokens.borderRadiusLarge,
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(_ExpressiveSpacing.lg),
@@ -822,23 +792,30 @@ class _SettingsSection extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  HugeIcon(
-                    icon: sectionIcon,
-                    color: colorScheme.primary,
-                    size: 20,
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: HugeIcon(
+                      icon: sectionIcon,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 24,
+                    ),
                   ),
-                  const SizedBox(width: _ExpressiveSpacing.sm),
+                  const SizedBox(width: _ExpressiveSpacing.md),
                   Text(
                     title,
                     style: GoogleFonts.plusJakartaSans(
-                      textStyle: Theme.of(context).textTheme.titleMedium,
-                      fontWeight: FontWeight.w700,
+                      textStyle: Theme.of(context).textTheme.titleLarge,
+                      fontWeight: FontWeight.w800,
                       color: colorScheme.onSurface,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: _ExpressiveSpacing.lg),
+              const SizedBox(height: _ExpressiveSpacing.xl),
               ...children,
             ],
           ),

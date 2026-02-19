@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:common/model/device.dart';
 import 'package:common/model/session_status.dart';
 import 'package:flutter/material.dart';
-import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/features/receive/model/receive_history_entry.dart';
 import 'package:localsend_app/features/receive/pages/receive_page.dart';
 import 'package:localsend_app/features/receive/provider/receive_history_provider.dart';
@@ -43,6 +42,14 @@ enum _EntryOption {
 const _optionsAll = _EntryOption.values;
 final _optionsWithoutOpen = [_EntryOption.info, _EntryOption.delete];
 
+class _ExpressiveSpacing {
+  static const double xs = 4;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 24;
+  static const double xl = 32;
+}
+
 class ReceiveHistoryPage extends StatelessWidget {
   const ReceiveHistoryPage({super.key});
 
@@ -77,10 +84,10 @@ class ReceiveHistoryPage extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(width: 15),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondaryContainerIfDark,
-                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainerIfDark,
+                FilledButton.tonalIcon(
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg, vertical: _ExpressiveSpacing.sm),
                   ),
                   onPressed: checkPlatform([TargetPlatform.iOS])
                       ? null
@@ -89,14 +96,14 @@ class ReceiveHistoryPage extends StatelessWidget {
                           final destination = context.read(settingsProvider).destination ?? await getDefaultDestinationDirectory();
                           await openFolder(folderPath: destination);
                         },
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedFolder01, color: Theme.of(context).iconTheme.color),
-                  label: Text(t.receiveHistoryPage.openFolder),
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedFolder01, color: Theme.of(context).iconTheme.color, size: 20),
+                  label: Text(t.receiveHistoryPage.openFolder, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
-                const SizedBox(width: 20),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondaryContainerIfDark,
-                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainerIfDark,
+                const SizedBox(width: _ExpressiveSpacing.md),
+                FilledButton.tonalIcon(
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg, vertical: _ExpressiveSpacing.sm),
                   ),
                   onPressed: entries.isEmpty
                       ? null
@@ -110,8 +117,8 @@ class ReceiveHistoryPage extends StatelessWidget {
                             await context.redux(receiveHistoryProvider).dispatchAsync(RemoveAllHistoryEntriesAction());
                           }
                         },
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: Theme.of(context).iconTheme.color),
-                  label: Text(t.receiveHistoryPage.deleteHistory),
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: Theme.of(context).iconTheme.color, size: 20),
+                  label: Text(t.receiveHistoryPage.deleteHistory, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -120,121 +127,181 @@ class ReceiveHistoryPage extends StatelessWidget {
           if (entries.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 100),
-              child: Center(child: Text(t.receiveHistoryPage.empty, style: Theme.of(context).textTheme.headlineMedium)),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(_ExpressiveSpacing.xl),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: HugeIcon(
+                        icon: HugeIcons.strokeRoundedFile01,
+                        color: Theme.of(context).colorScheme.outline,
+                        size: 48,
+                      ),
+                    ),
+                    const SizedBox(height: _ExpressiveSpacing.lg),
+                    Text(
+                      t.receiveHistoryPage.empty,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             )
           else
             ...entries.map((entry) {
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                child: InkWell(
-                  splashColor: Colors.transparent,
-                  splashFactory: NoSplash.splashFactory,
-                  highlightColor: Colors.transparent,
-                  hoverColor: Colors.transparent,
-                  onTap: entry.path != null || entry.isMessage
-                      ? () async {
-                          if (entry.isMessage) {
-                            final vm = ViewProvider((ref) {
-                              return ReceivePageVm(
-                                status: SessionStatus.waiting,
-                                sender: Device(
-                                  signalingId: null,
-                                  ip: '0.0.0.0',
-                                  version: '1.0.0',
-                                  port: 8080,
-                                  https: false,
-                                  fingerprint: 'fingerprint',
-                                  alias: entry.senderAlias,
-                                  deviceModel: 'deviceModel',
-                                  deviceType: DeviceType.web,
-                                  download: true,
-                                  discoveryMethods: const {},
-                                ),
-                                showSenderInfo: false,
-                                files: [],
-                                message: entry.fileName,
-                                onAccept: () {},
-                                onDecline: () {},
-                                onClose: () {},
-                              );
-                            });
-
-                            // ignore: unawaited_futures
-                            context.push(() => ReceivePage(vm));
-                            return;
-                          }
-
-                          await _openFile(context, entry, context.redux(receiveHistoryProvider));
-                        }
-                      : null,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FilePathThumbnail(
-                        path: entry.path,
-                        fileType: entry.fileType,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 3),
-                            Text(
-                              entry.fileName,
-                              style: const TextStyle(fontSize: 16),
-                              maxLines: 1,
-                              overflow: TextOverflow.fade,
-                              softWrap: false,
-                            ),
-                            Text(
-                              '${entry.timestampString} - ${entry.fileSize.asReadableFileSize} - ${entry.senderAlias}',
-                              maxLines: 1,
-                              overflow: TextOverflow.fade,
-                              softWrap: false,
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      PopupMenuButton<_EntryOption>(
-                        onSelected: (_EntryOption item) async {
-                          switch (item) {
-                            case _EntryOption.open:
-                              await _openFile(context, entry, context.redux(receiveHistoryProvider));
-                              break;
-                            case _EntryOption.showInFolder:
-                              if (entry.path != null) {
-                                await openFolder(
-                                  folderPath: File(entry.path!).parent.path,
-                                  fileName: path.basename(entry.path!),
+                padding: const EdgeInsets.symmetric(horizontal: _ExpressiveSpacing.lg, vertical: _ExpressiveSpacing.xs),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: entry.path != null || entry.isMessage
+                        ? () async {
+                            if (entry.isMessage) {
+                              final vm = ViewProvider((ref) {
+                                return ReceivePageVm(
+                                  status: SessionStatus.waiting,
+                                  sender: Device(
+                                    signalingId: null,
+                                    ip: '0.0.0.0',
+                                    version: '1.0.0',
+                                    port: 8080,
+                                    https: false,
+                                    fingerprint: 'fingerprint',
+                                    alias: entry.senderAlias,
+                                    deviceModel: 'deviceModel',
+                                    deviceType: DeviceType.web,
+                                    download: true,
+                                    discoveryMethods: const {},
+                                  ),
+                                  showSenderInfo: false,
+                                  files: [],
+                                  message: entry.fileName,
+                                  onAccept: () {},
+                                  onDecline: () {},
+                                  onClose: () {},
                                 );
-                              }
-                              break;
-                            case _EntryOption.info:
-                              // ignore: use_build_context_synchronously
-                              await showDialog(
-                                context: context,
-                                builder: (_) => FileInfoDialog(entry: entry),
-                              );
-                              break;
-                            case _EntryOption.delete:
-                              // ignore: use_build_context_synchronously
-                              await context.redux(receiveHistoryProvider).dispatchAsync(RemoveHistoryEntryAction(entry.id));
-                              break;
+                              });
+
+                              // ignore: unawaited_futures
+                              context.push(() => ReceivePage(vm));
+                              return;
+                            }
+
+                            await _openFile(context, entry, context.redux(receiveHistoryProvider));
                           }
-                        },
-                        itemBuilder: (BuildContext context) {
-                          return (entry.path != null ? _optionsAll : _optionsWithoutOpen).map((e) {
-                            return PopupMenuItem<_EntryOption>(
-                              value: e,
-                              child: Text(e.label),
-                            );
-                          }).toList();
-                        },
+                        : null,
+                    child: Padding(
+                      padding: const EdgeInsets.all(_ExpressiveSpacing.sm),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: FilePathThumbnail(
+                              path: entry.path,
+                              fileType: entry.fileType,
+                            ),
+                          ),
+                          const SizedBox(width: _ExpressiveSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  entry.fileName,
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.fade,
+                                  softWrap: false,
+                                ),
+                                const SizedBox(height: _ExpressiveSpacing.xs / 2),
+                                Text(
+                                  '${entry.timestampString} - ${entry.fileSize.asReadableFileSize} - ${entry.senderAlias}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.fade,
+                                  softWrap: false,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: _ExpressiveSpacing.sm),
+                          Material(
+                            type: MaterialType.transparency,
+                            child: DividerTheme(
+                              data: DividerThemeData(
+                                color: Theme.of(context).brightness == Brightness.light ? Colors.teal.shade100 : Colors.grey.shade700,
+                              ),
+                              child: PopupMenuButton<_EntryOption>(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                offset: const Offset(0, 40),
+                                elevation: 8,
+                                onSelected: (_EntryOption item) async {
+                                  switch (item) {
+                                    case _EntryOption.open:
+                                      await _openFile(context, entry, context.redux(receiveHistoryProvider));
+                                      break;
+                                    case _EntryOption.showInFolder:
+                                      if (entry.path != null) {
+                                        await openFolder(
+                                          folderPath: File(entry.path!).parent.path,
+                                          fileName: path.basename(entry.path!),
+                                        );
+                                      }
+                                      break;
+                                    case _EntryOption.info:
+                                      // ignore: use_build_context_synchronously
+                                      await showDialog(
+                                        context: context,
+                                        builder: (_) => FileInfoDialog(entry: entry),
+                                      );
+                                      break;
+                                    case _EntryOption.delete:
+                                      // ignore: use_build_context_synchronously
+                                      await context.redux(receiveHistoryProvider).dispatchAsync(RemoveHistoryEntryAction(entry.id));
+                                      break;
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) {
+                                  return (entry.path != null ? _optionsAll : _optionsWithoutOpen).map((e) {
+                                    return PopupMenuItem<_EntryOption>(
+                                      value: e,
+                                      child: Text(e.label, style: const TextStyle(fontWeight: FontWeight.w500)),
+                                    );
+                                  }).toList();
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               );
