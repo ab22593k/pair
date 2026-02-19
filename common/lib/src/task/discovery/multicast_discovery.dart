@@ -281,6 +281,10 @@ Future<List<_SocketResult>> _getSockets({
       // We associate the receiver socket with the first interface (it doesn't matter much for receiving)
       if (interfaces.isNotEmpty) {
         sockets.add(_SocketResult(interfaces.first, receiverSocket));
+      } else {
+        // No interfaces: socket was never added to `sockets`, so close it explicitly
+        // to avoid an open, unmanaged socket that is never cleaned up.
+        receiverSocket.close();
       }
     } catch (e) {
       _logger.severe('Could not bind UDP receiver socket on port $port', e);
