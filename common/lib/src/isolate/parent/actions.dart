@@ -295,6 +295,8 @@ Stream<R> _convertResponseToStream<R, T>({
       } else if (result.done) {
         if (result.error != null) {
           controller.addError(result.error!);
+          subscription.cancel(); // ignore: discarded_futures
+          controller.close(); // ignore: discarded_futures
         } else {
           subscription.cancel(); // ignore: discarded_futures
           controller.close(); // ignore: discarded_futures

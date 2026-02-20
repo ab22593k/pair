@@ -1,5 +1,4 @@
 [workspace]
-authors = ["Abdulwahab <ab22593k@gmail.com>"]
 channels = ["conda-forge"]
 name = "pair"
 platforms = ["linux-64"]

@@ -1,5 +1,4 @@
-name: cli
-description: A sample command-line application.
+name: terminal
 version: 1.0.0
 publish_to: "none"
 
